@@ -9,4 +9,4 @@ def test_create_job():
     assert r.status_code==202
     data = r.json()
     assert "job_id" in data
-    assert data["status"] in ("","","","")
+    assert data["status"] in ("FAILED","SUCCEDEED","RUNNING","QUEUED")
