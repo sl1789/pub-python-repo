@@ -1,11 +1,11 @@
 import streamlit as st
 from datetime import date, timedelta
-from api_client import health, submit_job, get_results
+from api_client import health, submit_job, get_results, get_job
 
-st.title("Toy UI: Submit Job + View Results")
+st.title("Async Jobs Demo")
 
 st.subheader("Backend health")
-if st.button("Check /health"):
+if st.button("Check health"):
     st.json(health())
     
 st.divider()
@@ -18,14 +18,25 @@ country=st.text_input("Filter: country (optional)", value="")
 if st.button("Submit"):
     resp = submit_job(start_date=start,end_date=end, 
                       filters={"country": country} if country else {})
-    st.success("Submitted")
+    st.session_state["job_id"]= resp["job_id"]
+    st.success(f"Submitted job_id={resp['job_id']}")
     st.json(resp)
 
 st.divider()
 st.subheader("Query results")
 
-if st.button("Load results"):
-    res=get_results(start,end)
-    st.json(res)
-    if res.get("rows"):
-        st.dataframe(res["rows"])
+job_id = st.session_state.get("job_id")
+if job_id:
+    st.subheader(f"Job status (job_id={job_id})")
+    
+    if st.button("Refresh status"):
+        status = get_job(job_id)
+        st.json(status)
+    
+    # If succeeded, show results
+    status = get_job(job_id)
+    if status["status"] == "SUCCEEDED":
+        st.success("Job finished. Loading results...")    
+        res=get_results(job_id,start,end)
+        if res.get("rows"):
+            st.dataframe(res["rows"])

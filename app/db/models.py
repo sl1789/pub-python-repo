@@ -14,18 +14,29 @@ class JobStatus(str, Enum):
     
 class Job(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=datetime.now, index=True)
+    updated_at: datetime = Field(default_factory=datetime.now, index=True)
     status: JobStatus = Field(default=JobStatus.QUEUED, index=True)
     
     # store UI parameters as JSON
     params: Dict[str,Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    
+    # execution metadata (future Spark integration)
+    runner: str = Field(default="local", index=True)
+    external_run_id: Optional[str] = Field(default=None, index=True)
+    
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
     
     output_ref : Optional[str] = Field(default=None)
     error_message: Optional[str] = Field(default=None)
     
 class ResultRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # NEW: connect results to a job run
+    job_id: int = Field(index=True)
+    
     business_date: date = Field(index=True)
     metric_name: str = Field(index=True)
     metric_value : float
