@@ -1,0 +1,7 @@
+Generic single-database configuration.
+Whenever you change models:
+1. Edit SQLModel classes
+2. Generate migration:
+alembic revision --autogenerate -m "describe change"
+3. Apply:
+alembic upgrade head
