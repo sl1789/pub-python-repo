@@ -1,4 +1,11 @@
 import time
+
+import sys
+import os
+
+# Adds the current directory to the path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from datetime import datetime, timedelta, date
 from sqlmodel import Session, select
 from app.db.session import engine

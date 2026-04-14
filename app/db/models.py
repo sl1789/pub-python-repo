@@ -9,7 +9,7 @@ from sqlalchemy.types import JSON
 class JobStatus(str, Enum):
     QUEUED="QUEUED"
     RUNNING="RUNNING"
-    SUCCEDEED="SUCCEDEED"
+    SUCCEEDED="SUCCEEDED"
     FAILED="FAILED"
     
 class Job(SQLModel, table=True):
