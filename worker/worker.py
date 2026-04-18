@@ -47,6 +47,7 @@ def process_job(session: Session, job: Job):
     job.finished_at = datetime.now()
     job.updated_at = datetime.now()
     job.output_ref = f"sqlite:result_rows(job_id={job.id})"
+    job.error_message = None # enforce
     session.add(job)
     session.commit()
     
@@ -71,6 +72,7 @@ def main():
                     job.error_message = str(e)
                     job.finished_at = datetime.now()
                     job.updated_at = datetime.now()
+                    job.output_ref = None
                     session.add(job)
                     session.commit()
                     print(f"Job {job.id} failed: {e}")
