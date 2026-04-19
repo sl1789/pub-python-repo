@@ -10,6 +10,7 @@ class RunnerError(RuntimeError):
 @dataclass(frozen=True)
 class SubmitResult:
     external_run_id: Optional[str] = None
+    output_ref: Optional[str] = None
     
 @dataclass(frozen=True)
 class PollResult:
@@ -28,14 +29,14 @@ class BaseRunner(ABC):
     
     @abstractmethod
     def submit(self, job_id: int, params: Dict[str, Any]) -> SubmitResult:
-        raise NotImplementedError
+        ...
     
     @abstractmethod
     def poll(self, external_run_id: Optional[str]) -> Optional[PollResult]:
         """
         Return PollResult if status is known, else None.
         """
-        raise NotImplementedError
+        ...
     
     def cancel(self, external_run_id: Optional[str]) -> None:
         # optional; not all backends support cancel

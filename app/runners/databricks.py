@@ -4,6 +4,8 @@ import requests
 from typing import Dict, Any, Optional
 from app.db.models import JobStatus
 from app.runners.base import BaseRunner, RunnerError, SubmitResult, PollResult
+from app.core.config import AZURE_STORAGE_ACCOUNT, AZURE_RESULTS_CONTAINER,AZURE_RESULTS_PREFIX, AZURE_STORAGE_KEY
+from app.core.config import DATABRICKS_HOST, DATABRICKS_TOKEN,DATABRICKS_JOB_ID
 
 class DatabricksRunner(BaseRunner):
     """
@@ -13,12 +15,19 @@ class DatabricksRunner(BaseRunner):
     DATABRICKS_JOB_ID existing job id
     """
     
-    def init(self):
-        self.host = os.getenv("DATABRICKS_HOST")
-        self.token = os.getenv("DATABRICKS_TOKEN")
-        self.job_id = os.getenv("DATABRICKS_JOB_ID")
-        if not (self.host and self.token and self.job_id):
-            raise RunnerError("Missing DATABRICKS_HOST/DATABRICKS_TOKEN/DATABRICKS_JOB_ID")
+    def __init__(self):
+        if not (DATABRICKS_HOST and DATABRICKS_TOKEN and DATABRICKS_JOB_ID):
+            raise RunnerError("Missing DATABRICKS_HOST/TOKEN/JOB_ID")
+        self.host = DATABRICKS_HOST
+        self.token = DATABRICKS_TOKEN
+        self.job_id = int(DATABRICKS_JOB_ID)
+
+    def _output_ref_for_job(self, job_id: int) -> str:
+        # This is the exact location your notebook will export to (Azure Blob Storage)
+        path = (
+            f"abfss://{AZURE_RESULTS_CONTAINER}@{AZURE_STORAGE_ACCOUNT}.dfs.core.windows.net/"f"{AZURE_RESULTS_PREFIX}/job_id={job_id}"
+        )
+        return f"parquet:{path}"
         
     def submit(self, job_id: int, params: Dict[str, Any]) -> SubmitResult:
         url = f"{self.host}/api/2.0/jobs/run-now"
@@ -29,6 +38,8 @@ class DatabricksRunner(BaseRunner):
             "notebook_params": {
             **params,
             "job_id": str(job_id), # correlate back to our metadata DB
+            "start_date": params["start_date"],
+            "end_date": params["end_date"],
             },
         }
 
@@ -42,7 +53,7 @@ class DatabricksRunner(BaseRunner):
         if not run_id:
             raise RunnerError(f"Databricks response missing run_id: {data}")
         
-        return SubmitResult(external_run_id=str(run_id))
+        return SubmitResult(external_run_id=str(run_id),output_ref=self._output_ref_for_job(job_id))
             
     def poll(self, external_run_id: Optional[str]) -> Optional[PollResult]:
         if not external_run_id:
@@ -50,6 +61,7 @@ class DatabricksRunner(BaseRunner):
         
         url = f"{self.host}/api/2.0/jobs/runs/get"
         headers = {"Authorization": f"Bearer {self.token}"}
+        
         r = requests.get(url, headers=headers, params={"run_id": external_run_id},
         timeout=30)
         
@@ -70,7 +82,7 @@ class DatabricksRunner(BaseRunner):
             if result == "SUCCESS":
                 # In real life, you'd point output_ref to a table/path written by the job
                 return PollResult(status=JobStatus.SUCCEEDED,
-                    output_ref=f"databricks:run_id={external_run_id}")
+                    output_ref=f"parquet:job_id={external_run_id}")
                 
             return PollResult(status=JobStatus.FAILED, error_message=message or
                 f"Databricks failed: {result}")

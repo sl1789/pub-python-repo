@@ -20,12 +20,13 @@ from app.runners.local import LocalRunner
 POLL_SECONDS = 1.0
 SIMULATED_SECONDS = 5
 
-def mark_running(session: Session, job: Job, external_run_id: str | None):
+def mark_running(session: Session, job: Job, external_run_id: str | None , external_output_ref:str | None):
     job.status = JobStatus.RUNNING
     job.started_at = job.started_at or datetime.now()
     job.updated_at = datetime.now()
     if external_run_id:
         job.external_run_id = external_run_id
+    job.output_ref= external_output_ref
     session.add(job)
     session.commit()
     session.refresh(job)
@@ -59,7 +60,7 @@ def process_queued_job(session: Session, job: Job):
         
     # External runner: submit and mark RUNNING
     submit = runner.submit(job_id=job.id, params=job.params)
-    mark_running(session, job, external_run_id=submit.external_run_id)
+    mark_running(session, job, external_run_id=submit.external_run_id,external_output_ref=submit.output_ref)
     
 def poll_running_jobs(session: Session):
     running_jobs = session.exec(select(Job).where(Job.status ==JobStatus.RUNNING)).all()

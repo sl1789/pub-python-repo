@@ -5,6 +5,7 @@ from app.core.security import require_roles
 from app.db.session import get_session
 from app.db.models import Job, JobStatus, ResultRow
 from app.schemas.results import ResultsResponse
+from app.results.factory import get_results_repository
 
 router = APIRouter(prefix="/results",tags=["results"])
 
@@ -27,23 +28,10 @@ def get_results(job_id:int= Query(...,ge=1),
             detail=f"Results are not available unless job status is SUCCEEDED. Current status={job.status}",
         )
     
-    stmt = (
-        select(ResultRow)
-        .where(ResultRow.job_id==job_id)
-        .where(ResultRow.business_date>=start_date, ResultRow.business_date<=end_date)
-        .order_by(ResultRow.business_date.asc())
-        )
-        
-    rows=session.exec(stmt).all()
-    payload=[
-        {
-            "business_date":r.business_date.isoformat(),
-            "metric_name":r.metric_name,
-            "metric_value":r.metric_value
-            } 
-        for r in rows
-        ]
+    repo = get_results_repository(job.output_ref)
     
-    return ResultsResponse(job_id=job_id,start_date=start_date, end_date=end_date, rows=payload)
+    rows = repo.load_results(job_id=job_id, start_date=start_date, end_date=end_date)
+    
+    return ResultsResponse(job_id=job_id,start_date=start_date, end_date=end_date, rows=rows)
 
 
