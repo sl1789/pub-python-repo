@@ -1,14 +1,14 @@
 from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-
+from app.core.security import require_roles
 from app.db.session import get_session
 from app.db.models import Job, JobStatus, ResultRow
 from app.schemas.results import ResultsResponse
 
 router = APIRouter(prefix="/results",tags=["results"])
 
-@router.get("",response_model=ResultsResponse)
+@router.get("",response_model=ResultsResponse, dependencies=[Depends(require_roles("viewer"))])
 def get_results(job_id:int= Query(...,ge=1), 
                 start_date:date= Query(...), 
                 end_date: date= Query(...), 

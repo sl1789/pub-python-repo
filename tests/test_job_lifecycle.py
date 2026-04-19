@@ -73,3 +73,12 @@ def test_list_jobs(client):
     data = r.json()
     assert "total" in data
     assert "items" in data
+    
+def get_token(client):
+    r = client.post("/auth/token", data={"username": "demo", "password": "demo123"})
+    assert r.status_code == 200
+    return r.json()["access_token"]
+
+token = get_token(client)
+headers = {"Authorization": f"Bearer {token}"}
+client.get("/jobs", headers=headers)

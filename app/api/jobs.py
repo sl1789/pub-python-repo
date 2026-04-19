@@ -5,6 +5,8 @@ from typing import Optional
 from app.db.session import get_session
 from app.db.models import Job, JobStatus
 from app.schemas.jobs import JobCreateRequest, JobCreateResponse, JobResponse,JobListResponse
+from app.core.security import require_roles, get_current_user
+
 
 router = APIRouter(prefix="/jobs",tags=["jobs"])
 
@@ -22,7 +24,7 @@ def to_job_response(job: Job) -> JobResponse:
         error_message=job.error_message,
         )
 
-@router.post("", response_model=JobCreateResponse, status_code=202)
+@router.post("", response_model=JobCreateResponse, status_code=202, dependencies=[Depends(require_roles("submitter"))])
 def create_job(req: JobCreateRequest, session: Session = Depends(get_session)):
     # validated by Pydantic validator too, but keep explicit guardrails:
     if req.start_date > req.end_date:
@@ -43,14 +45,14 @@ def create_job(req: JobCreateRequest, session: Session = Depends(get_session)):
     session.refresh(job)
     return JobCreateResponse(job_id=job.id, status= job.status)
 
-@router.get("/{job_id}",response_model=JobResponse)
+@router.get("/{job_id}",response_model=JobResponse, dependencies=[Depends(get_current_user)])
 def get_job(job_id: int, session : Session=Depends(get_session)):
     job = session.get(Job, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return to_job_response(job)
 
-@router.get("", response_model=JobListResponse)
+@router.get("", response_model=JobListResponse, dependencies=[Depends(require_roles("viewer"))])
 def list_jobs(
     status: Optional[JobStatus] = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),

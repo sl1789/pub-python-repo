@@ -7,6 +7,8 @@ from app.db.init_db import init_db_and_seed
 from app.api.health import router as health_router
 from app.api.jobs import router as job_router
 from app.api.results import router as results_router
+from app.api.auth import router as auth_router
+from app.core.security_middleware import RateLimitMiddleware,SecurityHeadersMiddleware, EnforceJsonContentTypeMiddleware
 import sys
 #from __future__ import annotations
 
@@ -16,6 +18,12 @@ app = FastAPI(title="Job Orchestrator API")
 
 # Middleware
 app.add_middleware(RequestIdMiddleware)
+
+# security middleware
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(EnforceJsonContentTypeMiddleware)
+app.add_middleware(RateLimitMiddleware, max_requests=120, window_seconds=60)
+
 # Exception handlers
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
@@ -26,5 +34,6 @@ def startup():
     init_db_and_seed()
     
 app.include_router(health_router)
+app.include_router(auth_router)
 app.include_router(job_router)
 app.include_router(results_router)
