@@ -2,6 +2,7 @@ from datetime import date,datetime
 from typing import Optional,Dict,Any, List
 from pydantic import BaseModel , Field, model_validator
 from app.db.models import Job, JobStatus, ResultRow
+from typing import Literal
 
 class JobCreateRequest(BaseModel):
     """
@@ -11,6 +12,7 @@ class JobCreateRequest(BaseModel):
     start_date:date
     end_date:date
     filters:Dict[str,Any]=Field(default_factory=dict)
+    runner: Literal["local", "databricks", "airflow"] = "local"
     
     @model_validator(mode="after")
     def validate_dates(self):

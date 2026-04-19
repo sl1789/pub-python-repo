@@ -48,7 +48,7 @@ ui:
 
 .PHONY: worker
 worker:
-	$(PYTHON) worker/worker.py
+	$(PYTHON) -m worker.worker
 
 # -------------------------
 # Testing

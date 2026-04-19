@@ -35,7 +35,7 @@ def create_job(req: JobCreateRequest, session: Session = Depends(get_session)):
             "end_date" : req.end_date.isoformat(),
             "filters" : req.filters,
         },
-        runner="local",
+        runner=req.runner,
         updated_at=datetime.now(),
     )
     session.add(job)
