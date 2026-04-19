@@ -8,7 +8,7 @@ from app.api.health import router as health_router
 from app.api.jobs import router as job_router
 from app.api.results import router as results_router
 import sys
-#from future import annotations
+#from __future__ import annotations
 
 print("PYTHONPATH:",sys.path)
 

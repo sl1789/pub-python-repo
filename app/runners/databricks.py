@@ -1,4 +1,4 @@
-from future import annotations
+from __future__ import annotations
 import os
 import requests
 from typing import Dict, Any, Optional
