@@ -31,6 +31,9 @@ class Job(SQLModel, table=True):
     output_ref : Optional[str] = Field(default=None)
     error_message: Optional[str] = Field(default=None)
     
+    attempts: int = 0
+    max_attempts: int = 3
+    
 class ResultRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     
@@ -41,3 +44,19 @@ class ResultRow(SQLModel, table=True):
     metric_name: str = Field(index=True)
     metric_value : float
     
+class JobEvent(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    job_id: int = Field(index=True)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    event_type: str
+    message: Optional[str] = None
+    
+class JobMetrics(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    job_id: int = Field(index=True)
+    started_at: datetime
+    finished_at: datetime
+    duration_seconds: float
+    row_count: int
+    runner: str
+    status: str

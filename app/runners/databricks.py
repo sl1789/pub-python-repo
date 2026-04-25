@@ -89,3 +89,14 @@ class DatabricksRunner(BaseRunner):
         
         # Unknown state
         return None
+    
+    def cancel(self, external_run_id: str):
+        url = f"{self.host}/api/2.0/jobs/runs/cancel"
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        requests.post(
+            url,
+            headers=headers,
+            json={"run_id": int(external_run_id)},
+            timeout=10,
+        )
