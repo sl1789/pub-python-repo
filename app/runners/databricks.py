@@ -35,11 +35,11 @@ class DatabricksRunner(BaseRunner):
         
         payload = {
             "job_id": int(self.job_id),
-            "notebook_params": {
-            **params,
+            "job_parameters": {
+            **{k: str(v) for k, v in params.items()},
             "job_id": str(job_id), # correlate back to our metadata DB
-            "start_date": params["start_date"],
-            "end_date": params["end_date"],
+            "start_date": str(params["start_date"]),
+            "end_date": str(params["end_date"]),
             },
         }
 

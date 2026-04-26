@@ -83,7 +83,7 @@ def require_roles(*required: str):
         if not set(required).issubset(set(user.roles)):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Missing required roles: {required}"
+                detail=f"Missing required roles: {required}, current roles: {user.roles} , input: {DEMO_USER_ROLES}"
                 )
         return user
     return _dep

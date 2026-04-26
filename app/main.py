@@ -15,7 +15,7 @@ import sys
 
 print("PYTHONPATH:",sys.path)
 
-setup_logging(service_name="api")
+#setup_logging(service_name="api")
 
 app = FastAPI(title="Job Orchestrator API")
 

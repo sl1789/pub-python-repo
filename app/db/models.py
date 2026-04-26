@@ -31,8 +31,8 @@ class Job(SQLModel, table=True):
     output_ref : Optional[str] = Field(default=None)
     error_message: Optional[str] = Field(default=None)
     
-    attempts: int = 0
-    max_attempts: int = 3
+    #attempts: int = 0
+    #max_attempts: int = 3
     
 class ResultRow(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
