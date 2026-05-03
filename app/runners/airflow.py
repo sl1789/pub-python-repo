@@ -15,7 +15,7 @@ class AirflowRunner(BaseRunner):
     AIRFLOW_PASSWORD
     """
     
-    def init(self):
+    def __init__(self):
         self.base_url = os.getenv("AIRFLOW_BASE_URL")
         self.dag_id = os.getenv("AIRFLOW_DAG_ID")
         self.user = os.getenv("AIRFLOW_USER")

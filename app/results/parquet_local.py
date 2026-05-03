@@ -4,7 +4,7 @@ from .base import ResultsRepository
 from pathlib import Path
 
 class LocalParquetResultsRepository(ResultsRepository):
-    def init(self, base_path: Path):
+    def __init__(self, base_path: Path):
         self.base_path = base_path
         
     def load_results(

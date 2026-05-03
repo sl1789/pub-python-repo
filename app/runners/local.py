@@ -11,7 +11,7 @@ class LocalRunner(BaseRunner):
     Executes the job locally (in the worker process) and writes results into ResultRow.
     This is the Phase A behavior, now behind a Runner abstraction."""
     
-    def init(self, simulated_seconds: int = 3):
+    def __init__(self, simulated_seconds: int = 3):
         self.simulated_seconds = simulated_seconds
         
     def submit(self, job_id: int, params: Dict[str, Any]) -> SubmitResult:

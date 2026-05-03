@@ -1,10 +1,13 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from enum import Enum
 from typing import Optional,Dict,Any
 #from __future__ import annotations
 from sqlmodel import SQLModel, Field 
 from sqlalchemy import Column
 from sqlalchemy.types import JSON
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 class JobStatus(str, Enum):
     QUEUED="QUEUED"
@@ -14,8 +17,8 @@ class JobStatus(str, Enum):
     
 class Job(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.now, index=True)
-    updated_at: datetime = Field(default_factory=datetime.now, index=True)
+    created_at: datetime = Field(default_factory=_utcnow, index=True)
+    updated_at: datetime = Field(default_factory=_utcnow, index=True)
     status: JobStatus = Field(default=JobStatus.QUEUED, index=True)
     
     # store UI parameters as JSON
@@ -47,7 +50,7 @@ class ResultRow(SQLModel, table=True):
 class JobEvent(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     job_id: int = Field(index=True)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=_utcnow)
     event_type: str
     message: Optional[str] = None
     

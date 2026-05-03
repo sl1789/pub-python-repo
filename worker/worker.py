@@ -1,3 +1,4 @@
+import logging
 import time
 
 import sys
@@ -6,7 +7,7 @@ import os
 # Adds the current directory to the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from sqlmodel import Session, select
 from app.db.session import engine
 from app.db.models import Job, JobStatus, ResultRow
@@ -16,17 +17,23 @@ from app.runners.base import RunnerError
 from app.runners.local import LocalRunner
 
 
+logger = logging.getLogger("worker")
+if not logger.handlers:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
+
 
 POLL_SECONDS = 1.0
 SIMULATED_SECONDS = 5
 
-def mark_running(session: Session, job: Job, external_run_id: str | None , external_output_ref:str | None):
+def mark_running(session: Session, job: Job, external_run_id: str | None = None, external_output_ref: str | None = None):
     job.status = JobStatus.RUNNING
     job.started_at = job.started_at or datetime.now()
     job.updated_at = datetime.now()
     if external_run_id:
         job.external_run_id = external_run_id
-    job.output_ref= external_output_ref
+    if external_output_ref is not None:
+        job.output_ref = external_output_ref
     session.add(job)
     session.commit()
     session.refresh(job)
@@ -72,7 +79,7 @@ def poll_running_jobs(session: Session):
                 apply_poll_result(session, job, poll.status, poll.output_ref, poll.error_message)
         except RunnerError as e:
             # Treat runner poll errors as transient; keep job RUNNING but record last error
-            job.updated_at = datetime.utcnow()
+            job.updated_at = datetime.now(timezone.utc)
             job.error_message = f"Poll error: {e}"
             session.add(job)
             session.commit()
@@ -116,30 +123,42 @@ def poll_running_jobs(session: Session):
 #     session.commit()
     
 def main():
-    print("Worker started (Runner-based). Polling for jobs...")
+    logger.info("Worker started (Runner-based). Polling for jobs...")
     while True:
         with Session(engine) as session:
-            # 1) Poll external running jobs
-            poll_running_jobs(session)
-            
+            # 1) Poll external running jobs (must not crash the loop)
+            try:
+                poll_running_jobs(session)
+            except Exception:
+                logger.exception("poll_running_jobs failed; continuing")
+
             # 2) Pick up one queued job (FIFO)
-            job = session.exec(
-                select(Job)
-                .where(Job.status ==JobStatus.QUEUED)
-                .order_by(Job.created_at)
-                .limit(1)
+            try:
+                job = session.exec(
+                    select(Job)
+                    .where(Job.status == JobStatus.QUEUED)
+                    .order_by(Job.created_at)
+                    .limit(1)
                 ).first()
-            
+            except Exception:
+                logger.exception("failed to query queued jobs; sleeping")
+                time.sleep(POLL_SECONDS)
+                continue
+
             if job:
                 try:
-                    print(f"Processing queued job {job.id} runner={job.runner}")
+                    logger.info("Processing queued job %s runner=%s", job.id, job.runner)
                     process_queued_job(session, job)
-                except Exception as e:
-                    apply_poll_result(session, job, JobStatus.FAILED, None, str(e))
-                    print(f"Job {job.id} failed: {e}")
+                except Exception:
+                    # Log full traceback server-side; persist a generic message
+                    # so the API never leaks internal details to callers.
+                    logger.exception("Job %s failed during processing", job.id)
+                    apply_poll_result(
+                        session, job, JobStatus.FAILED, None, "job failed; see server logs"
+                    )
             else:
                 time.sleep(POLL_SECONDS)
-            
 
-if __name__=="__main__":
-    main()            
+
+if __name__ == "__main__":
+    main()

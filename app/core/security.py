@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -26,6 +26,9 @@ class User(BaseModel):
     
 # Demo user store (replace with DB later)
 _demo_password_hash = pwd_context.hash(DEMO_USER_PASSWORD)
+# Pre-computed dummy hash used to keep authentication timing constant
+# regardless of whether the supplied username exists.
+_DUMMY_PASSWORD_HASH = pwd_context.hash("unused-dummy-password")
 _DEMO_USER = {
     "username": DEMO_USER_USERNAME,
     "password_hash": _demo_password_hash,
@@ -37,9 +40,15 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def authenticate_user(username: str, password: str) -> Optional[User]:
     # NOTE: demo only; replace with DB lookup
-    if username != _DEMO_USER["username"]:
-        return None
-    if not verify_password(password, _DEMO_USER["password_hash"]):
+    # Always run bcrypt to avoid a username-enumeration timing oracle.
+    if username == _DEMO_USER["username"]:
+        password_hash = _DEMO_USER["password_hash"]
+        is_real_user = True
+    else:
+        password_hash = _DUMMY_PASSWORD_HASH
+        is_real_user = False
+    valid = verify_password(password, password_hash)
+    if not (is_real_user and valid):
         return None
     return User(username=username, roles=_DEMO_USER["roles"])
 
@@ -49,7 +58,7 @@ def create_access_token(user: User) -> str:
     Keep it minimal: subject + roles + exp.
     """
     
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     exp = now + timedelta(minutes=JWT_EXPIRES_MINUTES)
     payload = {
         "sub": user.username,
@@ -83,7 +92,7 @@ def require_roles(*required: str):
         if not set(required).issubset(set(user.roles)):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Missing required roles: {required}, current roles: {user.roles} , input: {DEMO_USER_ROLES}"
+                detail="forbidden",
                 )
         return user
     return _dep
