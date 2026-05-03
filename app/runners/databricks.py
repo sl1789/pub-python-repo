@@ -6,6 +6,7 @@ from app.db.models import JobStatus
 from app.runners.base import BaseRunner, RunnerError, SubmitResult, PollResult
 from app.core.config import AZURE_STORAGE_ACCOUNT, AZURE_RESULTS_CONTAINER,AZURE_RESULTS_PREFIX, AZURE_STORAGE_KEY
 from app.core.config import DATABRICKS_HOST, DATABRICKS_TOKEN,DATABRICKS_JOB_ID
+from databricks.lib.paths import build_output_ref
 
 class DatabricksRunner(BaseRunner):
     """
@@ -23,11 +24,13 @@ class DatabricksRunner(BaseRunner):
         self.job_id = int(DATABRICKS_JOB_ID)
 
     def _output_ref_for_job(self, job_id: int) -> str:
-        # This is the exact location your notebook will export to (Azure Blob Storage)
-        path = (
-            f"abfss://{AZURE_RESULTS_CONTAINER}@{AZURE_STORAGE_ACCOUNT}.dfs.core.windows.net/"f"{AZURE_RESULTS_PREFIX}/job_id={job_id}"
+        # Single source of truth for the export path layout.
+        return build_output_ref(
+            storage_account=AZURE_STORAGE_ACCOUNT,
+            container=AZURE_RESULTS_CONTAINER,
+            prefix=AZURE_RESULTS_PREFIX,
+            job_id=job_id,
         )
-        return f"parquet:{path}"
         
     def submit(self, job_id: int, params: Dict[str, Any]) -> SubmitResult:
         url = f"{self.host}/api/2.0/jobs/run-now"
@@ -40,6 +43,13 @@ class DatabricksRunner(BaseRunner):
             "job_id": str(job_id), # correlate back to our metadata DB
             "start_date": str(params["start_date"]),
             "end_date": str(params["end_date"]),
+            # Notebook layout configuration (kept in sync with the API
+            # results reader via the shared paths module).
+            "storage_account": AZURE_STORAGE_ACCOUNT,
+            "container": AZURE_RESULTS_CONTAINER,
+            "prefix": AZURE_RESULTS_PREFIX,
+            "database": os.getenv("DATABRICKS_DATABASE", "demo"),
+            "table": os.getenv("DATABRICKS_TABLE", "job_results"),
             },
         }
 
