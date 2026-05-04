@@ -32,16 +32,7 @@ logger = get_logger(__name__)
 def load_historical_data(
     spark: SparkSession, table_name: str, ticker: str
 ) -> tuple[DataFrame, float]:
-    """Load historical data for a ticker and return (DataFrame, S0).
-
-    Args:
-        spark: Active SparkSession.
-        table_name: Fully qualified table name.
-        ticker: Stock ticker symbol.
-
-    Returns:
-        Tuple of (Spark DataFrame, latest adjusted close price S0).
-    """
+    """Load historical data for a ticker and return (DataFrame, S0)."""
     historical_df = spark.sql(f"""
         SELECT * FROM {table_name}
         WHERE ticker = '{ticker}'
@@ -62,11 +53,7 @@ def load_historical_data(
 
 
 def fit_distributions(historical_df: DataFrame) -> dict:
-    """Fit Cauchy and Student-t distributions to historical log returns.
-
-    Returns:
-        Dict with keys: mu, std, loc, scale, deg_f, tloc, tscale, log_array.
-    """
+    """Fit Cauchy and Student-t distributions to historical log returns."""
     pd_hist = historical_df.select("log_return").toPandas()
     log_array = pd_hist[["log_return"]].to_numpy()
 
@@ -101,17 +88,13 @@ def fit_distributions(historical_df: DataFrame) -> dict:
 def build_and_broadcast(
     spark: SparkSession, historical_df: DataFrame, dist_params: dict
 ) -> dict:
-    """Build the log-return dictionary and broadcast all variables.
-
-    Returns:
-        Dict of broadcast variable references (b, b_loc, b_scale, etc.).
-    """
+    """Build the log-return dictionary and broadcast all variables."""
     df_index = historical_df.select("pct_change", "log_return").withColumn(
         "id", F.row_number().over(Window.orderBy(F.monotonically_increasing_id()))
     )
 
     new_dict = df_index.select("id", "log_return").toPandas()
-    dict_ret = new_dict.set_index("id")["log_return"].dropna().to_dict()
+    dict_ret = {int(k): float(v) for k, v in new_dict.set_index("id")["log_return"].dropna().items()}
 
     logger.info(f"Dictionary size: {len(dict_ret)} entries")
 
@@ -166,11 +149,11 @@ def create_target_dataframe(
 # Run simulations
 # ---------------------------------------------------------------------------
 
-def run_simulation(target_df: DataFrame, udf_fn, S0: float) -> DataFrame:
+def run_simulation(target_df: DataFrame, sim_udf, S0: float) -> DataFrame:
     """Apply a single simulation UDF and compute option payoffs."""
     return (
         target_df.select("*")
-        .withColumn("logsum", udf_fn()(F.col("T")))
+        .withColumn("logsum", sim_udf(F.col("T")))
         .withColumn("sum", lit(S0) * F.exp("logsum"))
         .withColumn("priceCall", expr("IF(sum > K, sum - K, 0.0)"))
         .withColumn("pricePut", expr("IF(sum < K, K - sum, 0.0)"))
@@ -185,14 +168,14 @@ def run_all_simulations(
     Args:
         target_df: Target DataFrame with K, T, Runs, No columns.
         S0: Latest adjusted close price.
-        udf_map: Dict mapping method_name -> udf factory function.
+        udf_map: Dict mapping method_name -> ready-to-use Spark UDF.
 
     Returns:
         Dict of {method_name: DataFrame with simulation results}.
     """
     results = {}
-    for i, (name, udf_fn) in enumerate(udf_map.items(), 1):
-        results[name] = run_simulation(target_df, udf_fn, S0)
+    for i, (name, sim_udf) in enumerate(udf_map.items(), 1):
+        results[name] = run_simulation(target_df, sim_udf, S0)
         logger.info(f"  [{i}/{len(udf_map)}] {name} - defined")
     return results
 

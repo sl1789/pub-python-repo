@@ -1,4 +1,10 @@
-"""Data transformation module for the Yahoo Finance pipeline."""
+"""Data transformation module for the Yahoo Finance pipeline.
 
-from transforms.yfinance_transforms import download_and_transform
-from transforms import simulation
+Submodules:
+- yfinance_transforms: download and transform Yahoo Finance data (requires yfinance)
+- simulation: Monte Carlo simulation functions and UDF factories (requires scipy)
+
+Import submodules directly to avoid pulling in unnecessary dependencies:
+    from transforms.simulation import ...
+    from transforms.yfinance_transforms import ...
+"""
