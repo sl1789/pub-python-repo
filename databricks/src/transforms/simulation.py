@@ -82,6 +82,43 @@ def sim_student_t(
     return combined.sum(axis=1)
 
 
+def sim_black_scholes(
+    log_returns: np.ndarray, num_runs: int, T: int,
+    r: float = 0.0, vol: float = 0.2, **kwargs
+) -> np.ndarray:
+    """Black-Scholes GBM under risk-neutral measure (benchmark).
+
+    Simulates geometric Brownian motion:
+        dS/S = r*dt + vol*dW
+    In log space:
+        delta_lnS = (r - 0.5*vol²)*dt + vol*sqrt(dt)*Z
+
+    Uses dt = 1/252 (daily trading day convention).
+
+    Args:
+        log_returns: Not used directly (included for API consistency).
+        num_runs: Number of Monte Carlo paths.
+        T: Number of trading days to simulate.
+        r: Annualized risk-free interest rate (e.g., 0.05 for 5%).
+        vol: Annualized volatility (e.g., 0.20 for 20%).
+
+    Returns:
+        Array of log-sums (cumulative log-returns over T days), shape (num_runs,).
+    """
+    dt = 1.0 / 252.0
+    nudt = (r - 0.5 * vol**2) * dt
+    volsdt = vol * np.sqrt(dt)
+
+    # Generate standard normal draws: (num_runs, T)
+    Z = np.random.normal(size=(num_runs, T))
+
+    # Daily log-returns under GBM
+    delta_lnS = nudt + volsdt * Z
+
+    # Sum across days to get total log-return per path
+    return delta_lnS.sum(axis=1)
+
+
 # ---------------------------------------------------------------------------
 # Method registry
 # ---------------------------------------------------------------------------
@@ -92,4 +129,5 @@ SIMULATION_METHODS = {
     "window_10d": sim_window_10d,
     "window_20d": sim_window_20d,
     "student_t": sim_student_t,
+    "black_scholes": sim_black_scholes,
 }

@@ -27,6 +27,46 @@ logger = get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# Risk-free rate retrieval
+# ---------------------------------------------------------------------------
+
+_DEFAULT_RISK_FREE_RATE = 0.045  # 4.5% fallback
+
+
+def get_risk_free_rate(fallback: float = _DEFAULT_RISK_FREE_RATE) -> float:
+    """Fetch the current risk-free rate from Yahoo Finance (^IRX: 13-week T-bill).
+
+    The ^IRX index quotes the annualized yield as a percentage (e.g., 4.25 means 4.25%).
+    This function converts it to a decimal (0.0425).
+
+    Falls back to a default value if the fetch fails.
+
+    Returns:
+        Annualized risk-free rate as a decimal (e.g., 0.045 for 4.5%).
+    """
+    try:
+        import yfinance as yf
+
+        irx = yf.Ticker("^IRX")
+        hist = irx.history(period="5d")
+
+        if hist.empty:
+            logger.warning("No data returned for ^IRX. Using fallback rate.")
+            return fallback
+
+        # Latest close price is the yield in percentage
+        rate_pct = float(hist["Close"].iloc[-1])
+        rate = rate_pct / 100.0
+
+        logger.info(f"Risk-free rate (^IRX): {rate_pct:.2f}% = {rate:.4f}")
+        return rate
+
+    except Exception as e:
+        logger.warning(f"Failed to fetch risk-free rate: {e}. Using fallback={fallback}")
+        return fallback
+
+
+# ---------------------------------------------------------------------------
 # Data loading and distribution fitting
 # ---------------------------------------------------------------------------
 
@@ -64,20 +104,23 @@ def load_historical_data(
 
 
 def fit_distributions(log_returns: np.ndarray) -> dict:
-    """Fit Student-t distribution to log returns."""
+    """Fit Student-t distribution to log returns and compute annualized volatility."""
     mu = float(np.mean(log_returns))
     std = float(np.std(log_returns))
+
+    # Annualized volatility: daily std * sqrt(252)
+    vol = std * np.sqrt(252)
 
     params_t = t_dist.fit(log_returns)
     deg_f = float(params_t[0])
     tloc = float(params_t[-2])
     tscale = float(params_t[-1])
 
-    logger.info(f"mu={mu:.6f}, std={std:.6f}")
+    logger.info(f"mu={mu:.6f}, std={std:.6f}, vol(ann)={vol:.4f}")
     logger.info(f"Student-t: df={deg_f:.4f}, loc={tloc:.6f}, scale={tscale:.6f}")
 
     return {
-        "mu": mu, "std": std,
+        "mu": mu, "std": std, "vol": vol,
         "df": deg_f, "tloc": tloc, "tscale": tscale,
     }
 
@@ -100,6 +143,7 @@ def run_simulations(
     num_runs: int,
     dist_params: dict,
     alt_weight: float = 0.1,
+    r: float = 0.0,
     methods: dict | None = None,
 ) -> pd.DataFrame:
     """Run all simulation methods using NumPy and return results as pandas DataFrame.
@@ -112,6 +156,8 @@ def run_simulations(
         num_runs: Number of Monte Carlo paths.
         dist_params: Distribution parameters from fit_distributions().
         alt_weight: Weight for alternative distributions.
+        r: Annualized risk-free rate (used by black_scholes method for
+           drift and discounting).
         methods: Dict of method_name -> function. Defaults to SIMULATION_METHODS.
 
     Returns:
@@ -120,12 +166,16 @@ def run_simulations(
     if methods is None:
         methods = SIMULATION_METHODS
 
+    vol = dist_params.get("vol", dist_params["std"] * np.sqrt(252))
+
     # Common kwargs passed to all simulation functions
     sim_kwargs = {
         "alt_weight": alt_weight,
         "df": dist_params["df"],
         "tloc": dist_params["tloc"],
         "tscale": dist_params["tscale"],
+        "r": r,
+        "vol": vol,
     }
 
     results = []
@@ -145,6 +195,12 @@ def run_simulations(
 
         call_price = float(np.mean(call_payoffs))
         put_price = float(np.mean(put_payoffs))
+
+        # Black-Scholes uses risk-neutral pricing → discount to present value
+        if method_name == "black_scholes" and r > 0:
+            discount = np.exp(-r * T / 252.0)
+            call_price *= discount
+            put_price *= discount
 
         elapsed = time.time() - t_start
         logger.info(f"  {method_name}: Call=${call_price:.4f}, Put=${put_price:.4f} ({elapsed:.3f}s)")
