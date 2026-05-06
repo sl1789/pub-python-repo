@@ -42,16 +42,23 @@ def _download_with_retry(
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             if start:
-                data = yf.download(ticker, start=start, progress=False)
+                data = yf.download(ticker, start=start, progress=False, auto_adjust=True)
             else:
-                data = yf.download(ticker, period=period or "max", progress=False)
+                data = yf.download(ticker, period=period or "max", progress=False, auto_adjust=True)
 
-            if data.empty and attempt < MAX_RETRIES:
-                logger.warning(
-                    f"Empty response for {ticker} (attempt {attempt}/{MAX_RETRIES}). Retrying..."
+            if data.empty:
+                if attempt < MAX_RETRIES:
+                    logger.warning(
+                        f"Empty response for {ticker} (attempt {attempt}/{MAX_RETRIES}). Retrying..."
+                    )
+                    time.sleep(RETRY_BACKOFF_SECONDS * attempt)
+                    continue
+                # Final attempt also returned empty: surface this as an error
+                # rather than masquerading it as a success with 0 rows.
+                logger.error(
+                    f"All {MAX_RETRIES} attempts returned empty data for {ticker}."
                 )
-                time.sleep(RETRY_BACKOFF_SECONDS * attempt)
-                continue
+                return data
 
             return data
 

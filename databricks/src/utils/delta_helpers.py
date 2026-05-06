@@ -17,8 +17,14 @@ logger = get_logger(__name__)
 
 
 def _get_spark() -> SparkSession:
-    """Retrieve the active SparkSession."""
-    return SparkSession.getActiveSession()
+    """Retrieve the active SparkSession, asserting one exists."""
+    spark = SparkSession.getActiveSession()
+    if spark is None:
+        # Fall back to builder so callers outside a Databricks notebook
+        # context get a clear error path instead of a downstream
+        # AttributeError on `None.sql(...)`.
+        spark = SparkSession.builder.getOrCreate()
+    return spark
 
 
 def get_existing_tickers(table_name: str = FULL_TABLE_NAME) -> list[str]:
@@ -89,7 +95,14 @@ def merge_to_delta(
 
     if not table_exists:
         logger.info(f"Creating new Delta table: {table_name}")
-        df.write.format("delta").mode("overwrite").saveAsTable(table_name)
+        # Partition by `ticker` from the start so subsequent merges and
+        # per-ticker reads don't have to scan the whole table.
+        (
+            df.write.format("delta")
+            .mode("overwrite")
+            .partitionBy("ticker")
+            .saveAsTable(table_name)
+        )
         logger.info(f"Table created with {row_count} rows.")
     else:
         logger.info(f"Merging {row_count} rows into existing table: {table_name}")

@@ -7,15 +7,15 @@ and writing results to Delta tables.
 
 from __future__ import annotations
 
+import re
 import time
 
 import numpy as np
 import pandas as pd
-import scipy.stats
 from scipy.stats import t as t_dist
 
 from pyspark.sql import DataFrame, SparkSession, functions as F
-from pyspark.sql.functions import lit, current_timestamp
+from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import (
     StructType, StructField, IntegerType, FloatType, DoubleType, StringType,
 )
@@ -24,6 +24,22 @@ from config.settings import get_logger
 from transforms.simulation import SIMULATION_METHODS
 
 logger = get_logger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Identifier validation
+# ---------------------------------------------------------------------------
+
+# Conservative allowlist for ticker symbols (e.g. AAPL, BRK.B, ^GSPC).
+# Anything outside this set is rejected to prevent SQL injection through
+# string-interpolated metastore queries.
+_TICKER_RE = re.compile(r"^[A-Za-z0-9.\-^=]{1,16}$")
+
+
+def _validate_ticker(ticker: str) -> str:
+    if not isinstance(ticker, str) or not _TICKER_RE.match(ticker):
+        raise ValueError(f"invalid ticker symbol: {ticker!r}")
+    return ticker
 
 
 # ---------------------------------------------------------------------------
@@ -78,26 +94,32 @@ def load_historical_data(
     Returns:
         Tuple of (log_returns as 1D numpy array, latest adjusted close price).
     """
-    historical_df = spark.sql(f"""
-        SELECT * FROM {table_name}
-        WHERE ticker = '{ticker}'
-        ORDER BY Date
-    """)
+    # Reject anything that is not a recognized ticker symbol BEFORE building
+    # any SQL/DataFrame query. Prevents injection via the `ticker` widget.
+    ticker = _validate_ticker(ticker)
 
-    row_count = historical_df.count()
+    # Use the DataFrame API with a parameterized literal instead of f-string
+    # SQL so the `ticker` value is never interpolated into a query string.
+    # Pull the two columns we actually need in one Spark->pandas round-trip
+    # rather than running count + first + toPandas separately (each of which
+    # would re-evaluate the Delta scan).
+    pdf = (
+        spark.table(table_name)
+        .where(F.col("ticker") == F.lit(ticker))
+        .select("Date", "Adj_Close", "log_return")
+        .toPandas()
+    )
+
+    row_count = len(pdf)
     logger.info(f"Loaded {row_count} rows for ticker '{ticker}'")
-
     if row_count == 0:
         raise ValueError(f"No data found for ticker '{ticker}' in {table_name}")
 
-    S0 = float(
-        historical_df.orderBy(F.col("Date").desc()).select("Adj_Close").first()[0]
-    )
+    pdf = pdf.sort_values("Date")
+    S0 = float(pdf["Adj_Close"].iloc[-1])
     logger.info(f"S0 (latest price): {S0:.2f}")
 
-    # Extract log returns as a flat numpy array
-    pd_hist = historical_df.select("log_return").toPandas()
-    log_returns = pd_hist["log_return"].dropna().to_numpy().astype(np.float64)
+    log_returns = pdf["log_return"].dropna().to_numpy().astype(np.float64)
     logger.info(f"Log returns array: {len(log_returns)} values")
 
     return log_returns, S0
@@ -196,9 +218,11 @@ def run_simulations(
         call_price = float(np.mean(call_payoffs))
         put_price = float(np.mean(put_payoffs))
 
-        # Black-Scholes uses risk-neutral pricing → discount to present value
-        if method_name == "black_scholes" and r > 0:
-            discount = np.exp(-r * T / 252.0)
+        # Black-Scholes uses risk-neutral pricing -> always discount payoff to
+        # present value. (Previously gated on `r > 0`, which silently skipped
+        # discounting under negative-rate scenarios.)
+        if method_name == "black_scholes":
+            discount = float(np.exp(-r * T / 252.0))
             call_price *= discount
             put_price *= discount
 
@@ -263,19 +287,27 @@ def write_results(
     ticker: str,
     export_path: str | None = None,
 ) -> None:
-    """Write aggregated results to Delta table and optionally export to Parquet."""
+    """Write aggregated results to Delta table and optionally export to Parquet.
+
+    Idempotent on `ticker`: re-running with the same ticker replaces only
+    that ticker's partition rather than appending duplicate rows.
+    """
+    # Validate ticker before any string interpolation flows downstream.
+    ticker = _validate_ticker(ticker)
     spark = agg_df.sparkSession
 
     # Ensure database exists
     db = table_name.split(".")[0]
-    spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
+    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {db}")
 
-    # Write to Delta (append mode)
+    # Use replaceWhere so a re-run for the same ticker overwrites that
+    # partition instead of producing duplicate rows. Schema is fixed at
+    # _RESULTS_SCHEMA + created_at, so mergeSchema is no longer needed.
     (
         agg_df.write
         .format("delta")
-        .mode("append")
-        .option("mergeSchema", "true")
+        .mode("overwrite")
+        .option("replaceWhere", f"ticker = '{ticker}'")
         .partitionBy("ticker")
         .saveAsTable(table_name)
     )
