@@ -1,5 +1,4 @@
 import os
-import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -13,16 +12,11 @@ from app.api.health import router as health_router
 from app.api.jobs import router as job_router
 from app.api.results import router as results_router
 from app.api.auth import router as auth_router
-from app.core.logging_config import setup_logging
 from app.core.security_middleware import (
     RateLimitMiddleware,
     SecurityHeadersMiddleware,
     EnforceJsonContentTypeMiddleware,
 )
-
-print("PYTHONPATH:", sys.path)
-
-#setup_logging(service_name="api")
 
 
 @asynccontextmanager

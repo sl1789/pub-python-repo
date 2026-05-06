@@ -1,10 +1,9 @@
 # pub-python-repo
 
 A small **job orchestration platform** built with FastAPI, SQLModel, and Streamlit.
-It exposes a REST API for submitting, tracking, and retrieving the results of
-data jobs that can be executed by pluggable runners (local, Databricks, Airflow)
-and persisted to pluggable result backends (local Parquet, Azure ADLS Parquet,
-or the database).
+It exposes a REST API for submitting Monte Carlo option pricing jobs to a
+Databricks notebook, tracking their lifecycle, and retrieving the resulting
+rows from an Azure ADLS Gen2 parquet export.
 
 ## Architecture overview
 
@@ -15,13 +14,13 @@ or the database).
                             │
                             ▼
                      ┌──────────────┐     ┌────────────────────┐
-                     │  Worker loop │ ──► │ Runners (local /   │
-                     │  (poller)    │     │ databricks/airflow)│
+                     │  Worker loop │ ──► │ DatabricksRunner   │
+                     │  (poller)    │     │ (run-now + poll)   │
                      └──────┬───────┘     └────────────────────┘
                             │
                             ▼
                      ┌──────────────────────────────────────┐
-                     │ Results repos (parquet local/Azure)  │
+                     │ AzureParquetResultsRepository (ADLS) │
                      └──────────────────────────────────────┘
 ```
 
@@ -35,15 +34,16 @@ bootstrap on startup.
 - **Auth** ([app/api/auth.py](app/api/auth.py)) – `POST /auth/token` OAuth2
   password flow returning a JWT bearer token.
 - **Jobs** ([app/api/jobs.py](app/api/jobs.py))
-  - `POST /jobs` – submit a job (requires `submitter` role); validates date
-    range and stores params, runner, and status `QUEUED`.
+  - `POST /jobs` – submit a Monte Carlo job (requires `submitter` role); the
+    request body is `{ticker, strike, period_days, num_simulations}` and
+    `runner` is forced to `"databricks"`. The job is stored as `QUEUED`.
   - `GET /jobs/{job_id}` – fetch a single job (any authenticated user).
   - `GET /jobs` – paginated listing with optional status filter (requires
     `viewer` role).
 - **Results** ([app/api/results.py](app/api/results.py))
-  - `GET /results?job_id=&start_date=&end_date=` – returns rows for a job;
-    enforces that the job is `SUCCEEDED` (HTTP 409 otherwise) and dispatches to
-    the appropriate results repository based on the job's `output_ref`.
+  - `GET /results?job_id=` – returns simulation rows for a job; enforces that
+    the job is `SUCCEEDED` (HTTP 409 otherwise) and reads the parquet export
+    referenced by the job's `output_ref`.
 
 ### Authentication & authorization ([app/core/security.py](app/core/security.py))
 - Password hashing with `passlib`/bcrypt.
@@ -78,28 +78,21 @@ plus an `init_db_and_seed` helper for development bootstrap
 
 ### Background worker ([worker/worker.py](worker/worker.py))
 A polling loop that:
-1. Polls all `RUNNING` jobs through their runner and applies state updates.
-2. Picks up the next `QUEUED` job (FIFO):
-   - For `LocalRunner`, executes synchronously and persists results.
-   - For external runners, submits the job and transitions it to `RUNNING`
-     with an `external_run_id`.
+1. Polls all `RUNNING` jobs through the runner and applies state updates.
+2. Picks up the next `QUEUED` job (FIFO), submits it via `DatabricksRunner`,
+   and transitions it to `RUNNING` with an `external_run_id` and `output_ref`.
 3. Marks failures with an error message.
 
-### Pluggable runners ([app/runners](app/runners))
-Common `BaseRunner` interface ([app/runners/base.py](app/runners/base.py)) with a
-`get_runner(name)` factory ([app/runners/factory.py](app/runners/factory.py)):
-- [LocalRunner](app/runners/local.py) – in-process toy execution producing
-  metric rows.
-- [DatabricksRunner](app/runners/databricks.py) – submits and polls Databricks
-  jobs via the REST API.
-- [AirflowRunner](app/runners/airflow.py) – triggers and polls Airflow DAG runs.
+### Runner ([app/runners](app/runners))
+[DatabricksRunner](app/runners/databricks.py) – submits and polls Databricks
+Jobs via the REST API. Constructs the parquet `output_ref` at submit time
+using the shared [databricks/lib/paths.py](databricks/lib/paths.py) helpers.
 
-### Pluggable result repositories ([app/results](app/results))
-Common `ResultsRepository` interface ([app/results/base.py](app/results/base.py)),
-selected by the `output_ref` scheme via [app/results/factory.py](app/results/factory.py):
-- [parquet_local.py](app/results/parquet_local.py) – local filesystem Parquet.
-- [parquet_azure.py](app/results/parquet_azure.py) – Azure ADLS Gen2 Parquet
-  via `adlfs` / `pyarrow`.
+### Results repository ([app/results](app/results))
+[AzureParquetResultsRepository](app/results/parquet_azure.py) reads the
+ticker-partitioned parquet export written by the
+`monte_carlo_simulation` notebook via `adlfs`/`pyarrow` and filters rows down
+to the (ticker, K, T, Runs) combination of the requesting job.
 
 ### Schemas ([app/schemas](app/schemas))
 Pydantic request/response models for jobs, results, and error envelopes.
@@ -107,7 +100,7 @@ Pydantic request/response models for jobs, results, and error envelopes.
 ### Streamlit UI ([ui/streamlit_app.py](ui/streamlit_app.py))
 Small operator UI that:
 - Logs in against `/auth/token` and stores the JWT in session state.
-- Submits jobs (date range, runner, optional country filter).
+- Submits Monte Carlo jobs (ticker, strike K, period T, number of simulations).
 - Polls job status and renders result rows in a dataframe once the job is
   `SUCCEEDED`.
 
@@ -115,8 +108,8 @@ The HTTP client lives in [ui/api_client.py](ui/api_client.py).
 
 ### Databricks job assets ([databricks/](databricks/))
 
-Reference notebook and Python entry point used by the Databricks runner
-(`simple_job_results.ipynb`, `simple_job_results.py`).
+Monte Carlo simulation notebook executed by the Databricks runner
+(`databricks/jobs/monte_carlo_simulation.ipynb`).
 
 #### Monte Carlo Options Pricing Framework
 
@@ -200,7 +193,6 @@ Sample reverse-proxy configuration for fronting the FastAPI service.
 Pytest suite covering the API end to end:
 - [test_health.py](tests/test_health.py)
 - [test_jobs.py](tests/test_jobs.py)
-- [test_job_lifecycle.py](tests/test_job_lifecycle.py)
 - [test_results_flow.py](tests/test_results_flow.py)
 
 Shared fixtures in [tests/conftest.py](tests/conftest.py).
@@ -229,8 +221,8 @@ Environment variables are loaded via `python-dotenv`
 | `JWT_SECRET`, `JWT_ALGORITHM`, `JWT_EXPIRES_MINUTES` | Token signing |
 | `DEMO_USER_USERNAME` / `_PASSWORD` / `_ROLES` | Seeded demo user |
 | `API_HOST`, `API_PORT` | API bind address |
-| `AZURE_STORAGE_ACCOUNT`, `AZURE_RESULTS_CONTAINER`, `AZURE_RESULTS_PREFIX`, `AZURE_STORAGE_KEY` | Azure Parquet results backend |
-| `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_JOB_ID` | Databricks runner |
+| `AZURE_STORAGE_ACCOUNT`, `AZURE_RESULTS_CONTAINER`, `AZURE_MC_RESULTS_PREFIX`, `AZURE_STORAGE_KEY` | Azure parquet export read by the API (must match the notebook's writer) |
+| `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_MC_JOB_ID` | Databricks runner |
 
 ## Tech stack
 

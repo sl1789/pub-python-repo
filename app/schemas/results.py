@@ -1,9 +1,7 @@
-from datetime import date
-from typing import Optional,Dict,Any, List
-from pydantic import BaseModel 
+from typing import Any, Dict, List
+from pydantic import BaseModel
+
 
 class ResultsResponse(BaseModel):
-    job_id:int
-    start_date: date
-    end_date: date
+    job_id: int
     rows: List[Dict[str, Any]]

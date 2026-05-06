@@ -2,24 +2,23 @@
 results reader all agree on the export layout.
 """
 from __future__ import annotations
+import re
+
+_TICKER_RE = re.compile(r"^[A-Za-z0-9.\-^=]{1,16}$")
 
 
-def build_export_path(
+def build_mc_export_path(
     *,
     storage_account: str,
     container: str,
     prefix: str,
-    job_id: int,
+    ticker: str,
 ) -> str:
-    """Return the abfss:// path for a given job's parquet snapshot.
+    """Return the abfss:// path written by the monte_carlo_simulation notebook.
 
     Layout:
-        abfss://<container>@<storage_account>.dfs.core.windows.net/<prefix>/job_id=<job_id>/
+        abfss://<container>@<storage_account>.dfs.core.windows.net/<prefix>/ticker=<ticker>/
     """
-    if not isinstance(job_id, int):
-        raise TypeError(f"job_id must be int, got {type(job_id).__name__}")
-    if job_id <= 0:
-        raise ValueError(f"job_id must be > 0, got {job_id}")
     for name, value in (
         ("storage_account", storage_account),
         ("container", container),
@@ -27,23 +26,26 @@ def build_export_path(
     ):
         if not value or not isinstance(value, str):
             raise ValueError(f"{name} must be a non-empty string")
+    if not isinstance(ticker, str) or not _TICKER_RE.match(ticker):
+        raise ValueError(f"invalid ticker: {ticker!r}")
     return (
         f"abfss://{container}@{storage_account}.dfs.core.windows.net/"
-        f"{prefix}/job_id={job_id}"
+        f"{prefix}/ticker={ticker}"
     )
 
 
-def build_output_ref(
+def build_mc_output_ref(
     *,
     storage_account: str,
     container: str,
     prefix: str,
-    job_id: int,
+    ticker: str,
 ) -> str:
-    """`output_ref` value persisted on the Job row (parquet:<abfss path>)."""
-    return "parquet:" + build_export_path(
+    """`output_ref` value persisted on a Monte Carlo Job row."""
+    return "parquet:" + build_mc_export_path(
         storage_account=storage_account,
         container=container,
         prefix=prefix,
-        job_id=job_id,
+        ticker=ticker,
     )
+

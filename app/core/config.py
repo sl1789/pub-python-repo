@@ -37,9 +37,11 @@ API_PORT=int(os.getenv("API_PORT","8000"))
 
 AZURE_STORAGE_ACCOUNT = os.getenv("AZURE_STORAGE_ACCOUNT", "")
 AZURE_RESULTS_CONTAINER = os.getenv("AZURE_RESULTS_CONTAINER", "results")
-AZURE_RESULTS_PREFIX = os.getenv("AZURE_RESULTS_PREFIX", "export")
-# For toy use: storage account key (do not commit)
+# Prefix used by the Monte Carlo notebook's parquet snapshot. Must match
+# `EXPORT_PREFIX` in databricks/src/config/settings.py.
+AZURE_MC_RESULTS_PREFIX = os.getenv("AZURE_MC_RESULTS_PREFIX", "export/simulations")
 AZURE_STORAGE_KEY = os.getenv("AZURE_STORAGE_KEY", "")
 DATABRICKS_HOST = os.getenv("DATABRICKS_HOST", "")
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN", "")
-DATABRICKS_JOB_ID = os.getenv("DATABRICKS_JOB_ID", "")
+# Job id for the `monte_carlo_simulation` notebook.
+DATABRICKS_MC_JOB_ID = os.getenv("DATABRICKS_MC_JOB_ID", "")

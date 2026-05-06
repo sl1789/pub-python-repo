@@ -1,22 +1,29 @@
-import time
-from datetime import date, timedelta
-import pytest
-
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
 
 from app.main import app
 
-@pytest.fixture
-def client(): 
-    return TestClient(app)
+client = TestClient(app)
 
-def test_results_and_metrics(client):
-    job_id = 1
-    results = client.get(
-    f"/results?job_id={job_id}&start_date=2024-01-01&end_date=2024-01-03"
-    )
-    assert results.status_code == 200
-    metrics = client.get(f"/jobs/{job_id}/metrics")
-    assert metrics.status_code == 200
-    assert metrics.json()["row_count"] > 0
+
+def _auth_headers():
+    r = client.post("/auth/token", data={"username": "demo", "password": "demo123"})
+    assert r.status_code == 200, r.text
+    return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+
+def test_results_blocked_until_succeeded():
+    # Submit a Monte Carlo job; it will sit in QUEUED until the worker picks it up.
+    payload = {
+        "ticker": "AAPL",
+        "strike": 150.0,
+        "period_days": 10,
+        "num_simulations": 1000,
+    }
+    headers = _auth_headers()
+    r = client.post("/jobs", json=payload, headers=headers)
+    assert r.status_code == 202, r.text
+    job_id = r.json()["job_id"]
+
+    # Results should be blocked because the job is not yet SUCCEEDED.
+    r2 = client.get("/results", params={"job_id": job_id}, headers=headers)
+    assert r2.status_code == 409

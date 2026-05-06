@@ -1,44 +1,56 @@
-from datetime import date
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import pandas as pd
-from app.core.config import AZURE_STORAGE_ACCOUNT, AZURE_RESULTS_CONTAINER,AZURE_RESULTS_PREFIX, AZURE_STORAGE_KEY
+from app.core.config import AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY
 from app.results.base import ResultsRepository
+
 
 class AzureParquetResultsRepository(ResultsRepository):
     """
     Reads Parquet exports from ADLS Gen2 using fsspec/adlfs.
-    Export path pattern:
-    abfss://<container>@<account>.dfs.core.windows.net/<prefix>/job_id=<job_id>/
+
+    The repository is constructed with the *full* abfss:// path the writer
+    produced (carried on Job.output_ref). For Monte Carlo jobs the layout is:
+        .../<prefix>/ticker=<ticker>/
+    and rows are filtered down to the (K, T, Runs) combination this job ran.
     """
+
     def __init__(
-            self,
-            storage_account: str = AZURE_STORAGE_ACCOUNT,
-            container: str = AZURE_RESULTS_CONTAINER,
-            prefix: str = AZURE_RESULTS_PREFIX,
-            storage_key: str = AZURE_STORAGE_KEY,
-            ):
-        self.storage_account = storage_account
-        self.container = container
-        self.prefix = prefix
-        self.storage_key = storage_key
+        self,
+        path: str,
+        storage_account: Optional[str] = None,
+        storage_key: Optional[str] = None,
+    ):
+        if not path:
+            raise ValueError("path is required")
+        self.path = path
+        self.storage_account = storage_account or AZURE_STORAGE_ACCOUNT
+        self.storage_key = storage_key or AZURE_STORAGE_KEY
         if not self.storage_account:
             raise RuntimeError("AZURE_STORAGE_ACCOUNT is not set")
         if not self.storage_key:
             raise RuntimeError("AZURE_STORAGE_KEY is not set")
-        
-        
-    def _path_for_job(self, job_id: int) -> str:
-        return (f"abfss://{self.container}@{self.storage_account}.dfs.core.windows.net/"f"{self.prefix}/job_id={job_id}")
-    
-    def load_results(self, job_id: int, start_date: date, end_date: date) -> List[Dict[str,Any]]:
-        path = self._path_for_job(job_id)
+
+    def load_results(self, params: Dict[str, Any]) -> List[Dict[str, Any]]:
         storage_options = {
             "account_name": self.storage_account,
             "account_key": self.storage_key,
-            }
-        df = pd.read_parquet(path, storage_options=storage_options)
-        # Ensure business_date is comparable (string vs datetime)
-        df["business_date"] = pd.to_datetime(df["business_date"]).dt.date
-        mask = (df["business_date"] >= start_date) & (df["business_date"] <= end_date)
-        
-        return df.loc[mask].to_dict(orient="records")
+        }
+        df = pd.read_parquet(self.path, storage_options=storage_options)
+        return _apply_filters(df, params)
+
+
+def _apply_filters(df: "pd.DataFrame", params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Filter Monte Carlo rows down to the (ticker, K, T, Runs) combination
+    represented by `params`. Columns are produced by the
+    monte_carlo_simulation notebook; we only filter on what is present.
+    """
+    for col, key in (
+        ("ticker", "ticker"),
+        ("K", "strike"),
+        ("T", "period_days"),
+        ("Runs", "num_simulations"),
+    ):
+        v = params.get(key)
+        if v is not None and col in df.columns:
+            df = df[df[col] == v]
+    return df.to_dict(orient="records")

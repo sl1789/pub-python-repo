@@ -4,7 +4,7 @@ from sqlmodel import Session, select, func
 from typing import Optional
 from app.db.session import get_session
 from app.db.models import Job, JobStatus
-from app.schemas.jobs import JobCreateRequest, JobCreateResponse, JobResponse,JobListResponse
+from app.schemas.jobs import JobCreateRequest, JobCreateResponse, JobResponse, JobListResponse
 from app.core.security import require_roles, get_current_user
 
 
@@ -26,24 +26,23 @@ def to_job_response(job: Job) -> JobResponse:
 
 @router.post("", response_model=JobCreateResponse, status_code=202, dependencies=[Depends(require_roles("submitter"))])
 def create_job(req: JobCreateRequest, session: Session = Depends(get_session)):
-    # validated by Pydantic validator too, but keep explicit guardrails:
-    if req.start_date > req.end_date:
-        raise HTTPException(status_code=400, detail="start_date must be <= end_date")
-    
+    params = {
+        "ticker": req.ticker,
+        "strike": req.strike,
+        "period_days": req.period_days,
+        "num_simulations": req.num_simulations,
+    }
     job = Job(
-        status=JobStatus.QUEUED, 
-        params={
-            "start_date" : req.start_date.isoformat(),
-            "end_date" : req.end_date.isoformat(),
-            "filters" : req.filters,
-        },
+        status=JobStatus.QUEUED,
+        params=params,
         runner=req.runner,
         updated_at=datetime.now(),
     )
     session.add(job)
     session.commit()
     session.refresh(job)
-    return JobCreateResponse(job_id=job.id, status= job.status)
+    return JobCreateResponse(job_id=job.id, status=job.status)
+
 
 @router.get("/{job_id}",response_model=JobResponse, dependencies=[Depends(get_current_user)])
 def get_job(job_id: int, session : Session=Depends(get_session)):
