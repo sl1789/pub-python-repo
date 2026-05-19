@@ -152,6 +152,14 @@ live market prices from Yahoo Finance.
 4. **window_20d** – Window with 20-day step size
 5. **student_t** – `(1 − alt_weight)` × historical + `alt_weight` × Student-t draws
 6. **black_scholes** – GBM under risk-neutral measure; uses live risk-free rate from ^IRX and annualized historical volatility; discounted to present value
+7. **multifractal** – Mandelbrot MMAR "baby" model: risk-neutral GBM subordinated to a lognormal multiplicative cascade of trading time, producing fat tails and volatility clustering; intermittency parameter `lam` (default 0.4) controls cascade variance; discounted to present value. See [databricks/docs/multifractal_method.md](databricks/docs/multifractal_method.md) for derivation and references.
+8. **multifractal_empirical** – Same MMAR cascade as `multifractal`, but the per-step Gaussian shocks are replaced with standardised residuals resampled from the historical log-return series. Combines cascade-driven clustering with empirically fat / skewed shocks; risk-neutral and discounted.
+9. **block_bootstrap** – Politis–Romano stationary bootstrap: concatenates consecutive blocks (geometric lengths, mean `block_mean_len` ≈ 5 days) drawn from history. Preserves short-range autocorrelation and volatility clustering, fit-free.
+10. **fhs** – Filtered Historical Simulation under the physical measure: GARCH(1,1) MLE fit + resampling of standardised residuals, rolled forward through the conditional-variance recursion starting from today's vol regime. Empirical residuals provide fat tails; GARCH dynamics provide clustering.
+11. **fhs_rn** – FHS under the risk-neutral measure: same simulator with daily drift replaced by `r/252 − ½σ²`; combined with the Empirical Martingale Correction (EMC) and PV discount, yields a no-arbitrage-consistent option price.
+12. **analogue** – State-conditional k-nearest-neighbour bootstrap: at each step, each path queries a KD-tree of historical days for the `k` whose recent 5-day return/vol features most resemble the path's own current state, then samples one of their actual next-day returns. Markov-conditional rather than unconditional.
+
+See [databricks/docs/empirical_simulation_methods.md](databricks/docs/empirical_simulation_methods.md) for the theory behind the bootstrap / FHS / EMC / analogue family.
 
 ##### Running the framework
 

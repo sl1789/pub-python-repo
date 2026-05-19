@@ -21,7 +21,7 @@ from pyspark.sql.types import (
 )
 
 from config.settings import get_logger
-from transforms.simulation import SIMULATION_METHODS
+from transforms.simulation import SIMULATION_METHODS, RISK_NEUTRAL_METHODS, EMC_METHODS
 
 logger = get_logger(__name__)
 
@@ -166,7 +166,9 @@ def run_simulations(
     dist_params: dict,
     alt_weight: float = 0.1,
     r: float = 0.0,
+    lam: float = 0.4,
     methods: dict | None = None,
+    extra_emc_methods: set[str] | frozenset[str] | None = None,
 ) -> pd.DataFrame:
     """Run all simulation methods using NumPy and return results as pandas DataFrame.
 
@@ -178,15 +180,25 @@ def run_simulations(
         num_runs: Number of Monte Carlo paths.
         dist_params: Distribution parameters from fit_distributions().
         alt_weight: Weight for alternative distributions.
-        r: Annualized risk-free rate (used by black_scholes method for
-           drift and discounting).
+        r: Annualized risk-free rate (used by risk-neutral methods for drift
+           and discounting, and by EMC for the martingale target).
+        lam: Intermittency parameter for the multifractal (MMAR) method.
+             Larger values produce stronger volatility clustering and fatter
+             tails. lam=0 collapses the multifractal method back to GBM.
         methods: Dict of method_name -> function. Defaults to SIMULATION_METHODS.
+        extra_emc_methods: Optional set of additional method names to which
+             the Empirical Martingale Correction should be applied (on top of
+             the EMC_METHODS default). Useful for comparing pre- and post-EMC
+             behaviour of non-risk-neutral methods like `historical`,
+             `window`, and `block_bootstrap`.
 
     Returns:
         pandas DataFrame with columns: Runs, K, T, CallPrice, PutPrice, method.
     """
     if methods is None:
         methods = SIMULATION_METHODS
+
+    emc_set = set(EMC_METHODS) | set(extra_emc_methods or [])
 
     vol = dist_params.get("vol", dist_params["std"] * np.sqrt(252))
 
@@ -198,6 +210,7 @@ def run_simulations(
         "tscale": dist_params["tscale"],
         "r": r,
         "vol": vol,
+        "lam": lam,
     }
 
     results = []
@@ -212,16 +225,29 @@ def run_simulations(
 
         # Compute final prices and option payoffs
         final_prices = S0 * np.exp(log_sums)
+
+        # Empirical Martingale Correction (Duan & Simonato 1998): rescale
+        # terminal prices so the sample mean matches the risk-neutral forward
+        # S0 * exp(r*T/252). Removes Monte Carlo bias and turns any sampler
+        # (FHS, bootstrap, historical, ...) into a discrete martingale.
+        if method_name in emc_set:
+            sample_mean = float(np.mean(final_prices))
+            if sample_mean > 0:
+                target_mean = S0 * float(np.exp(r * T / 252.0))
+                final_prices = final_prices * (target_mean / sample_mean)
+
         call_payoffs = np.maximum(final_prices - K, 0.0)
         put_payoffs = np.maximum(K - final_prices, 0.0)
 
         call_price = float(np.mean(call_payoffs))
         put_price = float(np.mean(put_payoffs))
 
-        # Black-Scholes uses risk-neutral pricing -> always discount payoff to
-        # present value. (Previously gated on `r > 0`, which silently skipped
-        # discounting under negative-rate scenarios.)
-        if method_name == "black_scholes":
+        # Risk-neutral methods price expected payoffs under Q, so discount
+        # back to present value. Historical / window / student_t methods are
+        # non-risk-neutral and intentionally left undiscounted to preserve
+        # the article's empirical-distribution interpretation (use
+        # extra_emc_methods to opt them into the martingale correction).
+        if method_name in RISK_NEUTRAL_METHODS:
             discount = float(np.exp(-r * T / 252.0))
             call_price *= discount
             put_price *= discount
