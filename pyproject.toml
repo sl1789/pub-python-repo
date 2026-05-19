@@ -11,6 +11,7 @@ dependencies = [
     "fsspec>=2026.3.0",
     "httpx>=0.28.1",
     "passlib[bcrypt]>=1.7.4",
+    "plotly>=5.24.0",
     "pyarrow>=23.0.1",
     "pydantic>=2.12.5",
     "pyspark>=4.1.1",

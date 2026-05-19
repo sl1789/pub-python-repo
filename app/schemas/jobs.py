@@ -51,6 +51,12 @@ class JobResponse(BaseModel):
     external_run_id: Optional[str] = None
     output_ref: Optional[str] = None
     error_message: Optional[str] = None
+    # Echo of the request payload so the UI can show ticker/K/T/runs in
+    # the job list without a separate round-trip per row.
+    ticker: Optional[str] = None
+    strike: Optional[float] = None
+    period_days: Optional[int] = None
+    num_simulations: Optional[int] = None
 
 
 class ResultsResponse(BaseModel):

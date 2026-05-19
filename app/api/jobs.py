@@ -11,6 +11,7 @@ from app.core.security import require_roles, get_current_user
 router = APIRouter(prefix="/jobs",tags=["jobs"])
 
 def to_job_response(job: Job) -> JobResponse:
+    params = job.params or {}
     return JobResponse(
         job_id=job.id,
         status=job.status,
@@ -22,6 +23,10 @@ def to_job_response(job: Job) -> JobResponse:
         external_run_id=job.external_run_id,
         output_ref=job.output_ref,
         error_message=job.error_message,
+        ticker=params.get("ticker"),
+        strike=params.get("strike"),
+        period_days=params.get("period_days"),
+        num_simulations=params.get("num_simulations"),
         )
 
 @router.post("", response_model=JobCreateResponse, status_code=202, dependencies=[Depends(require_roles("submitter"))])
