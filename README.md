@@ -229,8 +229,8 @@ Environment variables are loaded via `python-dotenv`
 | `JWT_SECRET`, `JWT_ALGORITHM`, `JWT_EXPIRES_MINUTES` | Token signing |
 | `DEMO_USER_USERNAME` / `_PASSWORD` / `_ROLES` | Seeded demo user |
 | `API_HOST`, `API_PORT` | API bind address |
-| `AZURE_STORAGE_ACCOUNT`, `AZURE_RESULTS_CONTAINER`, `AZURE_MC_RESULTS_PREFIX`, `AZURE_STORAGE_KEY` | Azure parquet export read by the API (must match the notebook's writer) |
-| `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_MC_JOB_ID` | Databricks runner |
+| `AZURE_STORAGE_ACCOUNT`, `AZURE_RESULTS_CONTAINER`, `AZURE_RESULTS_PREFIX`, `AZURE_STORAGE_KEY` | Azure parquet export read by the API (must match the notebook's writer) |
+| `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_JOB_ID` | Databricks runner |
 
 ## Tech stack
 

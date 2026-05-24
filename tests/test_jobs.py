@@ -18,7 +18,7 @@ def _auth_headers():
     {
         "DATABRICKS_HOST": "https://example.com",
         "DATABRICKS_TOKEN": "x",
-        "DATABRICKS_MC_JOB_ID": "1",
+        "DATABRICKS_JOB_ID": "1",
         "AZURE_STORAGE_ACCOUNT": "acct",
         "AZURE_STORAGE_KEY": "key",
     },

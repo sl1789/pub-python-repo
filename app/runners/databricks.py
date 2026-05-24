@@ -6,12 +6,12 @@ from app.runners.base import BaseRunner, RunnerError, SubmitResult, PollResult
 from app.core.config import (
     AZURE_STORAGE_ACCOUNT,
     AZURE_RESULTS_CONTAINER,
-    AZURE_MC_RESULTS_PREFIX,
+    AZURE_RESULTS_PREFIX,
 )
 from app.core.config import (
     DATABRICKS_HOST,
     DATABRICKS_TOKEN,
-    DATABRICKS_MC_JOB_ID,
+    DATABRICKS_JOB_ID,
 )
 from databricks.lib.paths import build_mc_output_ref
 
@@ -20,15 +20,15 @@ class DatabricksRunner(BaseRunner):
     """
     Databricks Jobs runner for the `monte_carlo_simulation` notebook.
 
-    Required env vars: DATABRICKS_HOST, DATABRICKS_TOKEN, DATABRICKS_MC_JOB_ID.
+    Required env vars: DATABRICKS_HOST, DATABRICKS_TOKEN, DATABRICKS_JOB_ID.
     """
 
     def __init__(self):
-        if not (DATABRICKS_HOST and DATABRICKS_TOKEN and DATABRICKS_MC_JOB_ID):
+        if not (DATABRICKS_HOST and DATABRICKS_TOKEN and DATABRICKS_JOB_ID):
             raise RunnerError("Missing DATABRICKS_HOST/TOKEN/MC_JOB_ID")
         self.host = DATABRICKS_HOST
         self.token = DATABRICKS_TOKEN
-        self.job_id = int(DATABRICKS_MC_JOB_ID)
+        self.job_id = int(DATABRICKS_JOB_ID)
 
     def submit(self, job_id: int, params: Dict[str, Any]) -> SubmitResult:
         ticker = params["ticker"]
@@ -47,7 +47,7 @@ class DatabricksRunner(BaseRunner):
         output_ref = build_mc_output_ref(
             storage_account=AZURE_STORAGE_ACCOUNT,
             container=AZURE_RESULTS_CONTAINER,
-            prefix=AZURE_MC_RESULTS_PREFIX,
+            prefix=AZURE_RESULTS_PREFIX,
             ticker=ticker,
         )
         return SubmitResult(external_run_id=str(run_id), output_ref=output_ref)

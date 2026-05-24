@@ -39,9 +39,9 @@ AZURE_STORAGE_ACCOUNT = os.getenv("AZURE_STORAGE_ACCOUNT", "")
 AZURE_RESULTS_CONTAINER = os.getenv("AZURE_RESULTS_CONTAINER", "results")
 # Prefix used by the Monte Carlo notebook's parquet snapshot. Must match
 # `EXPORT_PREFIX` in databricks/src/config/settings.py.
-AZURE_MC_RESULTS_PREFIX = os.getenv("AZURE_MC_RESULTS_PREFIX", "export/simulations")
+AZURE_RESULTS_PREFIX = os.getenv("AZURE_RESULTS_PREFIX", "export/simulations")
 AZURE_STORAGE_KEY = os.getenv("AZURE_STORAGE_KEY", "")
 DATABRICKS_HOST = os.getenv("DATABRICKS_HOST", "")
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN", "")
 # Job id for the `monte_carlo_simulation` notebook.
-DATABRICKS_MC_JOB_ID = os.getenv("DATABRICKS_MC_JOB_ID", "")
+DATABRICKS_JOB_ID = os.getenv("DATABRICKS_JOB_ID", "")
