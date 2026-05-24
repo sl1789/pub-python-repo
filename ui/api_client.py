@@ -101,7 +101,14 @@ def get_results(token: str, job_id: int) -> dict:
         headers=_headers(token),
         timeout=30,
     )
-    r.raise_for_status()
+    if r.status_code >= 400:
+        # FastAPI puts the human-readable message in the JSON `detail` field;
+        # fall back to the raw body if the response isn't JSON.
+        try:
+            detail = r.json().get("detail", r.text)
+        except Exception:
+            detail = r.text
+        raise RuntimeError(f"GET /results failed ({r.status_code}): {detail}")
     return r.json()
 
 
