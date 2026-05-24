@@ -61,9 +61,14 @@ def _parse_dt(value):
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except Exception:
         return None
+    # Backend stores naive timestamps; treat them as UTC so they can be
+    # subtracted from `datetime.now(timezone.utc)` without raising.
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
 
 
 rows = []

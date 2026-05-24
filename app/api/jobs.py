@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, func
 from typing import Optional
@@ -41,7 +42,7 @@ def create_job(req: JobCreateRequest, session: Session = Depends(get_session)):
         status=JobStatus.QUEUED,
         params=params,
         runner=req.runner,
-        updated_at=datetime.now(),
+        updated_at=datetime.now(timezone.utc),
     )
     session.add(job)
     session.commit()
