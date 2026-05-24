@@ -11,6 +11,7 @@ from app.db.init_db import init_db_and_seed
 from app.api.health import router as health_router
 from app.api.jobs import router as job_router
 from app.api.results import router as results_router
+from app.api.datasets import router as datasets_router
 from app.api.auth import router as auth_router
 from app.core.security_middleware import (
     RateLimitMiddleware,
@@ -46,4 +47,5 @@ app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(job_router)
 app.include_router(results_router)
+app.include_router(datasets_router)
 

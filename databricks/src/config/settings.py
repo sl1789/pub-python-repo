@@ -66,28 +66,40 @@ RETRY_BACKOFF_SECONDS = 2
 # Databricks; locally they can be exported in your shell or .env file.
 STORAGE_ACCOUNT = os.getenv("AZURE_STORAGE_ACCOUNT", "")
 CONTAINER = os.getenv("AZURE_RESULTS_CONTAINER", "results")
-EXPORT_PREFIX = os.getenv("AZURE_RESULTS_PREFIX", "export/simulations")
+# Layout written under the container is:
+#     <CONTAINER>/<EXPORT_PREFIX>/<dataset>/[ticker=<TICKER>/]<parquet files>
+# Keep this in sync with `AZURE_RESULTS_PREFIX` on the API side.
+EXPORT_PREFIX = os.getenv("AZURE_RESULTS_PREFIX", "export")
 
 # Same allowlist as in utils.simulation_helpers; mirrored here so this module
 # stays import-cycle free.
 _TICKER_RE = re.compile(r"^[A-Za-z0-9.\-^=]{1,16}$")
+_DATASET_RE = re.compile(r"^[a-z][a-z0-9_]{1,31}$")
 
 
-def get_export_path(ticker: str) -> str:
-    """Build the Parquet export path for a given ticker.
+def get_export_path(dataset: str, ticker: str | None = None) -> str:
+    """Build the Parquet export path for a dataset (and optional ticker).
+
+    Layout:
+        abfss://<CONTAINER>@<ACCOUNT>.dfs.core.windows.net/<EXPORT_PREFIX>/<dataset>/[ticker=<TICKER>/]
 
     Raises:
         RuntimeError: if `AZURE_STORAGE_ACCOUNT` is not configured.
-        ValueError: if `ticker` does not match the allowlist (prevents path
-            traversal and abfss:// URI injection).
+        ValueError: if `dataset` or `ticker` do not match the allowlists
+            (prevents path traversal and abfss:// URI injection).
     """
     if not STORAGE_ACCOUNT:
         raise RuntimeError(
             "AZURE_STORAGE_ACCOUNT env var is not set; cannot build export path"
         )
+    if not isinstance(dataset, str) or not _DATASET_RE.match(dataset):
+        raise ValueError(f"invalid dataset name: {dataset!r}")
+    base = (
+        f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/"
+        f"{EXPORT_PREFIX}/{dataset}"
+    )
+    if ticker is None:
+        return f"{base}/"
     if not isinstance(ticker, str) or not _TICKER_RE.match(ticker):
         raise ValueError(f"invalid ticker symbol: {ticker!r}")
-    return (
-        f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/"
-        f"{EXPORT_PREFIX}/ticker={ticker}/"
-    )
+    return f"{base}/ticker={ticker}/"

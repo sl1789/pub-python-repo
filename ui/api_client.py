@@ -112,6 +112,36 @@ def get_results(token: str, job_id: int) -> dict:
     return r.json()
 
 
+def list_datasets(token: str) -> dict:
+    """List the parquet datasets exposed by the backend.
+
+    Returns ``{"items": [{"name", "description", "ticker_partitioned"}, ...]}``.
+    """
+    r = requests.get(
+        f"{API_BASE}/datasets", headers=_headers(token), timeout=20
+    )
+    r.raise_for_status()
+    return r.json()
+
+
+def get_dataset(token: str, name: str, ticker: Optional[str] = None) -> dict:
+    """Read rows of a parquet dataset, optionally filtered by ticker partition."""
+    params = {"ticker": ticker} if ticker else None
+    r = requests.get(
+        f"{API_BASE}/datasets/{name}",
+        params=params,
+        headers=_headers(token),
+        timeout=60,
+    )
+    if r.status_code >= 400:
+        try:
+            detail = r.json().get("detail", r.text)
+        except Exception:
+            detail = r.text
+        raise RuntimeError(f"GET /datasets/{name} failed ({r.status_code}): {detail}")
+    return r.json()
+
+
 # ---------------------------------------------------------------------------
 # JWT helpers (decode-only; we trust the server's signature)
 # ---------------------------------------------------------------------------

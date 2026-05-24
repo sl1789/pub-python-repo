@@ -13,7 +13,7 @@ from app.core.config import (
     DATABRICKS_TOKEN,
     DATABRICKS_JOB_ID,
 )
-from databricks.lib.paths import build_mc_output_ref
+from databricks.lib.paths import build_dataset_output_ref
 
 
 class DatabricksRunner(BaseRunner):
@@ -44,10 +44,11 @@ class DatabricksRunner(BaseRunner):
             },
         }
         run_id = self._run_now(payload)
-        output_ref = build_mc_output_ref(
+        output_ref = build_dataset_output_ref(
             storage_account=AZURE_STORAGE_ACCOUNT,
             container=AZURE_RESULTS_CONTAINER,
             prefix=AZURE_RESULTS_PREFIX,
+            dataset="simulations",
             ticker=ticker,
         )
         return SubmitResult(external_run_id=str(run_id), output_ref=output_ref)
