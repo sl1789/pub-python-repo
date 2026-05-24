@@ -15,6 +15,11 @@ st.caption(
 )
 
 token = get_token_or_stop()
+render_session_sidebar()
+st.sidebar.info(
+    "Looking for the MC-vs-market comparison, EMC pre/post, or block/lam "
+    "sweeps? See the **Analysis** page."
+)
 
 
 # Most commonly-inspected subset; the multiselect below lets users widen this.
@@ -187,6 +192,3 @@ st.dataframe(view, use_container_width=True, hide_index=True)
 
 with st.expander("Job metadata"):
     st.json(job)
-
-
-render_session_sidebar()

@@ -1,8 +1,15 @@
 """Registry of parquet datasets exposed by the API.
 
-Each entry mirrors a folder produced by one of the Databricks notebooks.
+Each entry mirrors a folder produced by `databricks/jobs/mc_vs_actual_test.ipynb`.
 Centralising the list here means the API and UI agree on what is queryable
 without each route hard-coding paths.
+
+Scope: this endpoint surfaces the *research* outputs from
+``mc_vs_actual_test``. The per-job ``simulations`` parquet is intentionally
+NOT listed here — that flow is owned by ``/results?job_id=`` so callers
+inspect a single MC run by its job id, not by browsing the whole prefix.
+The ``options`` (yfinance snapshots) and ``scalability`` (benchmark)
+datasets are likewise out of scope until they have a dedicated UI.
 """
 
 from __future__ import annotations
@@ -20,11 +27,6 @@ class DatasetSpec:
 
 
 DATASETS: dict[str, DatasetSpec] = {
-    "simulations": DatasetSpec(
-        name="simulations",
-        description="MC option prices per (ticker, K, T, method).",
-        ticker_partitioned=True,
-    ),
     "mc_vs_actual": DatasetSpec(
         name="mc_vs_actual",
         description="MC vs market option-chain comparison.",
@@ -43,16 +45,6 @@ DATASETS: dict[str, DatasetSpec] = {
     "lam_sweep": DatasetSpec(
         name="lam_sweep",
         description="Multifractal lam parameter sweep.",
-        ticker_partitioned=True,
-    ),
-    "scalability": DatasetSpec(
-        name="scalability",
-        description="MC scalability benchmark (price/SE vs num_runs).",
-        ticker_partitioned=False,
-    ),
-    "options": DatasetSpec(
-        name="options",
-        description="Raw option-chain snapshots fetched from yfinance.",
         ticker_partitioned=True,
     ),
 }

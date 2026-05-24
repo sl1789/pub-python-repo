@@ -142,6 +142,28 @@ def get_dataset(token: str, name: str, ticker: Optional[str] = None) -> dict:
     return r.json()
 
 
+def get_emc_join(token: str, ticker: str) -> dict:
+    """Server-side pre/post EMC MAPE join for a single ticker.
+
+    Returns ``{ticker, num_runs, ds_updated_at, rows: [{method, side, pre_mape, post_mape, delta}, ...]}``.
+    """
+    r = requests.get(
+        f"{API_BASE}/datasets/mc_vs_actual_emc_join",
+        params={"ticker": ticker},
+        headers=_headers(token),
+        timeout=60,
+    )
+    if r.status_code >= 400:
+        try:
+            detail = r.json().get("detail", r.text)
+        except Exception:
+            detail = r.text
+        raise RuntimeError(
+            f"GET /datasets/mc_vs_actual_emc_join failed ({r.status_code}): {detail}"
+        )
+    return r.json()
+
+
 # ---------------------------------------------------------------------------
 # JWT helpers (decode-only; we trust the server's signature)
 # ---------------------------------------------------------------------------
