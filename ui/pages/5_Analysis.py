@@ -46,23 +46,13 @@ render_session_sidebar()
 # ---------------------------------------------------------------------------
 COMMON_TICKERS = ["SPY", "AAPL", "MSFT", "GOOGL", "AMZN", "META"]
 
-c1, c2 = st.columns([1, 3])
-with c1:
-    ticker = st.selectbox(
-        "Ticker",
-        options=COMMON_TICKERS,
-        index=0,
-        help="All four research datasets are partitioned by ticker; "
-             "pick one to scope every tab below.",
-    )
-with c2:
-    custom = st.text_input(
-        "...or custom ticker",
-        value="",
-        placeholder="Overrides the dropdown when non-empty (e.g. NVDA)",
-    )
-if custom.strip():
-    ticker = custom.strip()
+ticker = st.selectbox(
+    "Ticker",
+    options=COMMON_TICKERS,
+    index=0,
+    help="All four research datasets are partitioned by ticker; "
+         "pick one to scope every tab below.",
+)
 
 
 # ---------------------------------------------------------------------------

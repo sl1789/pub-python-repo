@@ -9,8 +9,8 @@ import streamlit as st
 
 from api_client import get_token_or_stop, list_jobs, render_session_sidebar
 
-st.set_page_config(page_title="Jobs - MC Orchestrator", layout="wide")
-st.title("Jobs")
+st.set_page_config(page_title="Jobs Monitoring - Monte Carlo Option Pricing", layout="wide")
+st.title("Jobs Monitoring")
 st.caption("Recent Monte Carlo jobs. Page auto-refreshes while any job is active.")
 
 token = get_token_or_stop()
@@ -126,7 +126,7 @@ with col_a:
 with col_b:
     if st.button("Open in Results", use_container_width=True, disabled=not job_ids):
         st.session_state["results_job_id"] = int(selected)
-        st.switch_page("pages/3_Results.py")
+        st.switch_page("pages/3_Jobs_Results.py")
 
 
 # ---------------------------------------------------------------------------

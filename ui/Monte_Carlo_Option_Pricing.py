@@ -1,4 +1,4 @@
-"""Landing + login page for the MC Orchestrator UI.
+"""Landing + login page for the Monte Carlo Option Pricing UI.
 
 Multi-page layout: this file is the entrypoint, the actual workflow pages
 live under `ui/pages/` and are auto-discovered by Streamlit.
@@ -8,20 +8,19 @@ import streamlit as st
 
 from api_client import (
     decode_jwt_payload,
-    health,
     login,
     render_session_sidebar,
     token_expiry_seconds,
 )
 
 st.set_page_config(
-    page_title="MC Orchestrator",
+    page_title="Monte Carlo Option Pricing",
     page_icon="MC",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-st.title("Monte Carlo Orchestrator")
+st.title("Monte Carlo Option Pricing")
 st.caption(
     "Submit, monitor and inspect Monte Carlo option-pricing jobs that run on "
     "Databricks. Use the pages in the sidebar to navigate."
@@ -42,9 +41,6 @@ with col_left:
         payload = decode_jwt_payload(token)
         user = payload.get("sub") or payload.get("username") or "user"
         st.success(f"Signed in as **{user}**.")
-        st.markdown("- Use **Submit** to queue a new simulation.")
-        st.markdown("- Use **Jobs** to see recent jobs and refresh their status.")
-        st.markdown("- Use **Results** to chart prices and compare methods.")
     else:
         with st.form("login_form", clear_on_submit=False):
             username = st.text_input("Username", value="demo")
@@ -60,15 +56,15 @@ with col_left:
                 st.rerun()
 
 with col_right:
-    st.subheader("Backend health")
-    if st.button("Check API health", use_container_width=True):
-        try:
-            st.json(health())
-        except Exception as e:
-            st.error(f"Health check failed: {e}")
-    st.caption(
-        "If this fails the FastAPI service is not reachable at `API_BASE`. "
-        "Check the env var or restart the backend."
+    st.subheader("Where to go next")
+    st.markdown(
+        "- **Submit** — queue a new Monte Carlo simulation on Databricks.\n"
+        "- **Jobs Monitoring** — watch recent jobs and refresh their status.\n"
+        "- **Jobs Results** — chart prices and compare methods for one job.\n"
+        "- **Compare** — line up multiple jobs or methods side by side.\n"
+        "- **Analysis** — research outputs (MC vs market, EMC, sweeps).\n"
+        "- **About** — architecture, methods, Databricks notebooks.\n"
+        "- **Admin** — backend health and connection details."
     )
 
 render_session_sidebar()

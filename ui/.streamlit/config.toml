@@ -1,6 +1,12 @@
 [theme]
-base = "dark"
-primaryColor = "#4f8bf9"
+# White-and-blue palette: pure-white surface, vivid blue accent, soft
+# blue-tinted panels. Easier on the eyes than the default dark theme.
+base = "light"
+primaryColor = "#1d4ed8"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#eff6ff"
+textColor = "#0f172a"
+font = "sans serif"
 
 [server]
 runOnSave = true

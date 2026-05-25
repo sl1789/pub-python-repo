@@ -97,7 +97,7 @@ to the (ticker, K, T, Runs) combination of the requesting job.
 ### Schemas ([app/schemas](app/schemas))
 Pydantic request/response models for jobs, results, and error envelopes.
 
-### Streamlit UI ([ui/streamlit_app.py](ui/streamlit_app.py))
+### Streamlit UI ([ui/Monte_Carlo_Option_Pricing.py](ui/Monte_Carlo_Option_Pricing.py))
 Small operator UI that:
 - Logs in against `/auth/token` and stores the JWT in session state.
 - Submits Monte Carlo jobs (ticker, strike K, period T, number of simulations).

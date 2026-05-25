@@ -1,14 +1,20 @@
-"""Results page: chart and inspect a finished job's prices across methods."""
+"""Jobs Results page: chart and inspect a finished job's prices across methods."""
 
 from __future__ import annotations
 
 import pandas as pd
 import streamlit as st
 
-from api_client import get_job, get_results, get_token_or_stop, render_session_sidebar
+from api_client import (
+    get_job,
+    get_results,
+    get_token_or_stop,
+    list_jobs,
+    render_session_sidebar,
+)
 
-st.set_page_config(page_title="Results - MC Orchestrator", layout="wide")
-st.title("Results")
+st.set_page_config(page_title="Jobs Results - Monte Carlo Option Pricing", layout="wide")
+st.title("Jobs Results")
 st.caption(
     "Compare Call/Put prices across simulation methods for a single job. "
     "Only `SUCCEEDED` jobs return results."
@@ -22,8 +28,6 @@ st.sidebar.info(
 )
 
 
-# Most commonly-inspected subset; the multiselect below lets users widen this.
-DEFAULT_METHODS = ["black_scholes", "fhs_rn", "multifractal", "window"]
 ALL_KNOWN_METHODS = [
     "historical", "window", "window_10d", "window_20d",
     "student_t", "black_scholes",
@@ -33,24 +37,65 @@ ALL_KNOWN_METHODS = [
 
 
 # ---------------------------------------------------------------------------
-# Job picker
+# Job picker — dropdown of SUCCEEDED jobs with ticker / strike / horizon /
+# path count / submitted-at so the user does not have to remember IDs.
 # ---------------------------------------------------------------------------
-preselected = st.session_state.get("results_job_id") or st.session_state.get("last_job_id")
-col_id, col_btn = st.columns([3, 1])
-with col_id:
-    job_id = st.number_input(
-        "Job ID",
-        min_value=1,
-        value=int(preselected) if preselected else 1,
-        step=1,
-    )
-with col_btn:
-    refresh = st.button("Load", use_container_width=True)
-
-if not (preselected or refresh):
-    st.info("Enter a job ID and click **Load**, or open from the **Jobs** page.")
+try:
+    jobs_resp = list_jobs(token, status="SUCCEEDED", limit=200)
+except Exception as e:
+    st.error(f"Failed to list jobs: {e}")
     st.stop()
 
+succeeded = jobs_resp.get("items", [])
+if not succeeded:
+    st.info(
+        "No `SUCCEEDED` jobs yet. Submit one from the **Submit** page; once it "
+        "finishes it will appear here automatically."
+    )
+    st.stop()
+
+
+def _fmt_submitted(value: str | None) -> str:
+    """Render submitted_at as 'YYYY-MM-DD HH:MM' (best-effort)."""
+    if not value:
+        return "?"
+    try:
+        from datetime import datetime
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        return str(value)[:16]
+
+
+def _label(job: dict) -> str:
+    runs = job.get("num_simulations")
+    runs_s = f"{runs:,}" if isinstance(runs, int) else str(runs)
+    return (
+        f"#{job.get('job_id')}  \u00b7  {job.get('ticker') or '?'}  "
+        f"K={job.get('strike')}  T={job.get('period_days')}d  "
+        f"runs={runs_s}  "
+        f"\u00b7  submitted {_fmt_submitted(job.get('submitted_at'))}"
+    )
+
+
+labels = {_label(j): int(j["job_id"]) for j in succeeded}
+
+# Pre-select whatever the user just opened from another page, if any.
+pre_id = st.session_state.get("results_job_id") or st.session_state.get("last_job_id")
+default_idx = 0
+if pre_id:
+    for i, jid in enumerate(labels.values()):
+        if jid == int(pre_id):
+            default_idx = i
+            break
+
+selected_label = st.selectbox(
+    "Job",
+    options=list(labels.keys()),
+    index=default_idx,
+    help="Showing succeeded jobs newest first. Pick one to load its results.",
+)
+job_id = labels[selected_label]
 st.session_state["results_job_id"] = int(job_id)
 
 
@@ -105,12 +150,11 @@ if "method" not in df.columns:
 # Method filter
 # ---------------------------------------------------------------------------
 present_methods = sorted(df["method"].dropna().unique().tolist())
-default_selection = [m for m in DEFAULT_METHODS if m in present_methods] or present_methods
 
 selected = st.multiselect(
     "Methods to display",
     options=present_methods,
-    default=default_selection,
+    default=present_methods,
     help="Filter the comparison to a subset of the methods that ran for this job.",
 )
 if not selected:

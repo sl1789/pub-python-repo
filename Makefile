@@ -44,7 +44,7 @@ api:
 
 .PHONY: ui
 ui:
-	$(VENV)/bin/streamlit run ui/streamlit_app.py
+	$(VENV)/bin/streamlit run ui/Monte_Carlo_Option_Pricing.py
 
 .PHONY: worker
 worker:
