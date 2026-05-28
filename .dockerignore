@@ -1,0 +1,55 @@
+# Build context exclusions — keep the image small and avoid leaking secrets.
+
+# --- VCS / IDE ---
+.git
+.gitignore
+.github
+.vscode
+.idea
+.devcontainer
+
+# --- Python build/runtime junk ---
+__pycache__
+*.py[cod]
+*$py.class
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+
+# --- Virtualenvs (use the one inside the image) ---
+.venv
+venv
+env
+
+# --- Local state / databases ---
+*.db
+*.sqlite
+*.sqlite3
+app.db
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Tests, docs, notebooks (not needed at runtime) ---
+tests
+docs
+*.md
+!README.md
+databricks/docs
+databricks/jobs/*.ipynb
+
+# --- Build artefacts / OS noise ---
+dist
+build
+.DS_Store
+Thumbs.db
+
+# --- Docker artefacts ---
+Dockerfile
+docker-compose.yml
+.dockerignore
