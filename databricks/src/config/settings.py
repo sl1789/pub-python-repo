@@ -7,6 +7,7 @@ ticker symbols, and retry/logging settings.
 import logging
 import os
 import re
+from datetime import datetime, timezone
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -24,6 +25,18 @@ def get_logger(name: str) -> logging.Logger:
         logger.addHandler(handler)
     logger.setLevel(LOG_LEVEL)
     return logger
+
+
+# ---------------------------------------------------------------------------
+# Run ID (unique per notebook execution — used for append-mode Delta writes)
+# ---------------------------------------------------------------------------
+def make_run_id() -> str:
+    """Generate a run_id based on current UTC timestamp.
+
+    Format: YYYY-MM-DDTHHMMSS (ISO-ish, filesystem-safe).
+    Call once per notebook execution and pass to all write functions.
+    """
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%S")
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +71,6 @@ MAX_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 2
 
 # ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
 # Parquet export (Azure ADLS)
 # ---------------------------------------------------------------------------
 # Driven by environment variables so the storage account name is not
@@ -66,27 +78,31 @@ RETRY_BACKOFF_SECONDS = 2
 # Databricks; locally they can be exported in your shell or .env file.
 STORAGE_ACCOUNT = os.getenv("AZURE_STORAGE_ACCOUNT", "")
 CONTAINER = os.getenv("AZURE_RESULTS_CONTAINER", "results")
-# Layout written under the container is:
-#     <CONTAINER>/<EXPORT_PREFIX>/<dataset>/[ticker=<TICKER>/]<parquet files>
-# Keep this in sync with `AZURE_RESULTS_PREFIX` on the API side.
 EXPORT_PREFIX = os.getenv("AZURE_RESULTS_PREFIX", "export")
 
-# Same allowlist as in utils.simulation_helpers; mirrored here so this module
-# stays import-cycle free.
+# Layout (aligned with databricks/lib/paths.py and the API reader):
+#     abfss://<CONTAINER>@<ACCOUNT>.dfs.core.windows.net/<PREFIX>/<dataset>/[ticker=<TICKER>]/data.parquet
+#
+# The API reads from the directory (picks up all .parquet files inside).
+# Each notebook run OVERWRITES the parquet (latest snapshot).
+# Historical runs are preserved in Delta tables (append mode with run_id).
+
 _TICKER_RE = re.compile(r"^[A-Za-z0-9.\-^=]{1,16}$")
 _DATASET_RE = re.compile(r"^[a-z][a-z0-9_]{1,31}$")
 
 
 def get_export_path(dataset: str, ticker: str | None = None) -> str:
-    """Build the Parquet export path for a dataset (and optional ticker).
+    """Build the Parquet export directory path for a dataset.
+
+    Returns the DIRECTORY path (no trailing slash) that matches what the API
+    reads via pd.read_parquet(). The caller writes a file INSIDE this directory.
 
     Layout:
-        abfss://<CONTAINER>@<ACCOUNT>.dfs.core.windows.net/<EXPORT_PREFIX>/<dataset>/[ticker=<TICKER>/]
+        abfss://<CONTAINER>@<ACCOUNT>.dfs.core.windows.net/<PREFIX>/<dataset>/[ticker=<TICKER>]
 
     Raises:
         RuntimeError: if `AZURE_STORAGE_ACCOUNT` is not configured.
-        ValueError: if `dataset` or `ticker` do not match the allowlists
-            (prevents path traversal and abfss:// URI injection).
+        ValueError: if `dataset` or `ticker` do not match the allowlists.
     """
     if not STORAGE_ACCOUNT:
         raise RuntimeError(
@@ -99,7 +115,7 @@ def get_export_path(dataset: str, ticker: str | None = None) -> str:
         f"{EXPORT_PREFIX}/{dataset}"
     )
     if ticker is None:
-        return f"{base}/"
+        return base
     if not isinstance(ticker, str) or not _TICKER_RE.match(ticker):
         raise ValueError(f"invalid ticker symbol: {ticker!r}")
-    return f"{base}/ticker={ticker}/"
+    return f"{base}/ticker={ticker}"
