@@ -1,0 +1,120 @@
+\xpg@aux {variant=monotonic,numerals=arabic}{greek}
+\contentsline {section}{\numberline {1}Εισαγωγή}{13}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Αντικείμενο και κίνητρο της εργασίας}{13}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Στόχοι της εργασίας}{13}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Συνεισφορά}{14}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Δομή του κειμένου}{15}{subsection.1.4}%
+\contentsline {section}{\numberline {2}Δικαιώματα Προαίρεσης (Options) και επενδυτικές στρατηγικές}{16}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Ορολογία Δικαιωμάτων Προαίρεσης}{16}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Τα δικαιώματα προαίρεσης}{16}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Είδη Δικαιωμάτων}{17}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Το δικαίωμα αγοράς (Call)}{17}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Το δικαίωμα πώλησης (Put)}{17}{subsubsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.4}Ιδιότητες των δικαιωμάτων προαίρεσης}{18}{subsection.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Παράγοντες που επηρεάζουν την τιμή των δ.π.}{18}{subsubsection.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}Υποθέσεις και όρια τιμών}{19}{subsubsection.2.4.2}%
+\contentsline {subsubsection}{\numberline {2.4.3}Ισοτιμία put-call}{19}{subsubsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.5}Επενδυτικές στρατηγικές με δικαιώματα προαίρεσης}{20}{subsection.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}Κάλυψη με δικαίωμα προαίρεσης αγοράς}{20}{subsubsection.2.5.1}%
+\contentsline {subsubsection}{\numberline {2.5.2}Προστασία με δικαίωμα προαίρεσης πώλησης}{20}{subsubsection.2.5.2}%
+\contentsline {subsubsection}{\numberline {2.5.3}Άνοιγμα Ταύρου (Bull Spread)}{21}{subsubsection.2.5.3}%
+\contentsline {subsubsection}{\numberline {2.5.4}Άνοιγμα Πεταλούδας (Butterfly Spread)}{21}{subsubsection.2.5.4}%
+\contentsline {subsubsection}{\numberline {2.5.5}Διασκελισμός (Straddle)}{21}{subsubsection.2.5.5}%
+\contentsline {subsubsection}{\numberline {2.5.6}Στραγγαλισμός (Strangle)}{22}{subsubsection.2.5.6}%
+\contentsline {section}{\numberline {3}Ο αλγόριθμος Black-Scholes-Merton και η προσομοίωση Monte Carlo}{24}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Εισαγωγή}{24}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Ένα απλό μοντέλο για τις μετοχές}{24}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Στοχαστικές διαδικασίες συνεχούς χρόνου}{24}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Το μοντέλο της μετοχής}{25}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Η έννοια της μεταβλητότητας}{25}{subsubsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.3}Η προσομοίωση Monte Carlo}{26}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Το λήμμα Itô}{26}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Ο αλγόριθμος Black-Scholes-Merton}{27}{subsection.3.5}%
+\contentsline {subsubsection}{\numberline {3.5.1}Υποθέσεις}{27}{subsubsection.3.5.1}%
+\contentsline {subsubsection}{\numberline {3.5.2}Ανάλυση της διαφορικής εξίσωσης BSM}{28}{subsubsection.3.5.2}%
+\contentsline {subsubsection}{\numberline {3.5.3}Τύποι κλειστής μορφής}{29}{subsubsection.3.5.3}%
+\contentsline {section}{\numberline {4}Κριτική στον Black-Scholes-Merton}{30}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Επισκόπηση των αδυναμιών}{30}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Η υπόθεση της αποδοτικής αγοράς και η πληροφόρηση}{30}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Η σταθερότητα της διακύμανσης}{31}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Ανάλυση τάσεων}{31}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Η συμπεριφορά των επενδυτών}{32}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Η συνέχεια των μεταβολών}{32}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Η κίνηση Brown και η κανονική κατανομή}{32}{subsection.4.7}%
+\contentsline {section}{\numberline {5}Σχετική βιβλιογραφία}{34}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Επισκόπηση}{34}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Επεκτάσεις του BSM και τιμολόγηση με Monte Carlo}{34}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Κατανεμημένος και παράλληλος υπολογισμός στη χρηματοοικονομική}{35}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Στατιστικές μέθοδοι και υποδομές δεδομένων}{35}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Συμβολή της παρούσας εργασίας έναντι της βιβλιογραφίας}{36}{subsection.5.5}%
+\contentsline {section}{\numberline {6}Σύγχρονες προσεγγίσεις και εμπειρικές μέθοδοι προσομοίωσης}{37}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Επισκόπηση των μεθόδων}{37}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Ιστορική προσομοίωση και παράθυρα (window methods)}{37}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Παραμετρικές εναλλακτικές: t-Student}{38}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Πολυκλασματικά μοντέλα (Multifractal)}{38}{subsection.6.4}%
+\contentsline {subsubsection}{\numberline {6.4.1}Το μοντέλο MMAR}{38}{subsubsection.6.4.1}%
+\contentsline {subsubsection}{\numberline {6.4.2}Λογαριθμοκανονική πολυκλασματική διαδικασία}{39}{subsubsection.6.4.2}%
+\contentsline {subsubsection}{\numberline {6.4.3}Μέθοδοι \texttt {multifractal} και \texttt {multifractal\_empirical}}{39}{subsubsection.6.4.3}%
+\contentsline {subsection}{\numberline {6.5}Block Bootstrap}{39}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}Filtered Historical Simulation (FHS)}{40}{subsection.6.6}%
+\contentsline {subsubsection}{\numberline {6.6.1}GARCH(1,1) και τυποποιημένα κατάλοιπα}{40}{subsubsection.6.6.1}%
+\contentsline {subsubsection}{\numberline {6.6.2}Μέθοδος \texttt {fhs}}{40}{subsubsection.6.6.2}%
+\contentsline {subsubsection}{\numberline {6.6.3}Μέθοδος \texttt {fhs\_rn} (risk-neutral)}{40}{subsubsection.6.6.3}%
+\contentsline {subsection}{\numberline {6.7}Μέθοδος Analogue (k-NN)}{41}{subsection.6.7}%
+\contentsline {subsection}{\numberline {6.8}Empirical Martingale Correction (EMC)}{41}{subsection.6.8}%
+\contentsline {section}{\numberline {7}Υπολογιστική αρχιτεκτονική: Apache Spark και Databricks}{43}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Από το Hadoop στο Spark}{43}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Το προγραμματιστικό μοντέλο του Apache Spark}{43}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Databricks ως διαχειριζόμενη πλατφόρμα}{44}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Επιλογές παραλληλισμού για Monte Carlo}{44}{subsection.7.4}%
+\contentsline {subsubsection}{\numberline {7.4.1}Διανυσματοποίηση με NumPy στο driver}{44}{subsubsection.7.4.1}%
+\contentsline {subsubsection}{\numberline {7.4.2}Παραλληλισμός μέσω Spark UDFs / mapPartitions}{45}{subsubsection.7.4.2}%
+\contentsline {subsubsection}{\numberline {7.4.3}Λόγοι επιλογής της προσέγγισης}{45}{subsubsection.7.4.3}%
+\contentsline {subsection}{\numberline {7.5}Διαχείριση δεδομένων}{45}{subsection.7.5}%
+\contentsline {subsubsection}{\numberline {7.5.1}Λήψη ιστορικών τιμών (yfinance pipeline)}{45}{subsubsection.7.5.1}%
+\contentsline {subsubsection}{\numberline {7.5.2}Αποθήκευση σε Delta Tables}{45}{subsubsection.7.5.2}%
+\contentsline {subsubsection}{\numberline {7.5.3}Εξαγωγή παραγόμενων datasets σε Parquet}{46}{subsubsection.7.5.3}%
+\contentsline {subsection}{\numberline {7.6}Διάταξη αρχείων στο ADLS Gen2}{46}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}Επιδόσεις και κλιμακωσιμότητα}{46}{subsection.7.7}%
+\contentsline {section}{\numberline {8}Σχεδίαση της εφαρμογής}{47}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Επισκόπηση αρχιτεκτονικής}{47}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}REST API (FastAPI)}{48}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Αυθεντικοποίηση και έλεγχος πρόσβασης}{49}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Middleware ασφαλείας και παρατηρησιμότητας}{49}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}Αποθήκευση και μοντέλο δεδομένων}{50}{subsection.8.5}%
+\contentsline {subsection}{\numberline {8.6}Worker και κύκλος ζωής εργασίας}{50}{subsection.8.6}%
+\contentsline {subsection}{\numberline {8.7}Αφαιρέσεις Runners}{51}{subsection.8.7}%
+\contentsline {subsection}{\numberline {8.8}Αποθήκευση αποτελεσμάτων}{51}{subsection.8.8}%
+\contentsline {subsection}{\numberline {8.9}Σύνολα δεδομένων ανάλυσης (datasets registry)}{51}{subsection.8.9}%
+\contentsline {subsection}{\numberline {8.10}Διεπαφή χρήστη (Streamlit)}{52}{subsection.8.10}%
+\contentsline {subsubsection}{\numberline {8.10.1}Σελίδα εισόδου}{52}{subsubsection.8.10.1}%
+\contentsline {subsubsection}{\numberline {8.10.2}Υποβολή εργασίας}{52}{subsubsection.8.10.2}%
+\contentsline {subsubsection}{\numberline {8.10.3}Παρακολούθηση εργασιών}{52}{subsubsection.8.10.3}%
+\contentsline {subsubsection}{\numberline {8.10.4}Αποτελέσματα εργασίας}{52}{subsubsection.8.10.4}%
+\contentsline {subsubsection}{\numberline {8.10.5}Σύγκριση εκτελέσεων}{52}{subsubsection.8.10.5}%
+\contentsline {subsubsection}{\numberline {8.10.6}Σελίδα ανάλυσης}{52}{subsubsection.8.10.6}%
+\contentsline {subsubsection}{\numberline {8.10.7}Σελίδα ``About''}{52}{subsubsection.8.10.7}%
+\contentsline {subsubsection}{\numberline {8.10.8}Σελίδα Διαχείρισης}{52}{subsubsection.8.10.8}%
+\contentsline {subsection}{\numberline {8.11}Διαμόρφωση και μυστικά}{52}{subsection.8.11}%
+\contentsline {subsection}{\numberline {8.12}Συσκευοποίηση και ανάπτυξη}{53}{subsection.8.12}%
+\contentsline {section}{\numberline {9}Υλοποίηση, Προσομοιώσεις και Αποτελέσματα}{54}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Πειραματικό περιβάλλον}{54}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Σύγκριση μεθόδων προσομοίωσης έναντι πραγματικών τιμών}{55}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Συμπεριφορά για At-The-Money δικαιώματα}{55}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}Επίδραση της διόρθωσης EMC}{57}{subsection.9.4}%
+\contentsline {subsection}{\numberline {9.5}Ευαισθησία ως προς το μήκος block}{58}{subsection.9.5}%
+\contentsline {subsection}{\numberline {9.6}Ευαισθησία ως προς την παράμετρο $\mitlambda $ του πολυκλασματικού μοντέλου}{59}{subsection.9.6}%
+\contentsline {subsection}{\numberline {9.7}Σύγκλιση και υπολογιστικό κόστος}{60}{subsection.9.7}%
+\contentsline {subsection}{\numberline {9.8}Σύνοψη αποτελεσμάτων}{61}{subsection.9.8}%
+\contentsline {section}{\numberline {10}Συμπεράσματα και μελλοντικές κατευθύνσεις}{62}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Σύνοψη της εργασίας}{62}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Βασικά συμπεράσματα}{62}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Περιορισμοί}{63}{subsection.10.3}%
+\contentsline {subsection}{\numberline {10.4}Μελλοντικές κατευθύνσεις}{64}{subsection.10.4}%
+\contentsline {section}{\numberline {A}Παράρτημα Α: Παράμετροι εκτέλεσης}{65}{appendix.A}%
+\contentsline {section}{\numberline {B}Παράρτημα Β: Επιπλέον γραφήματα}{67}{appendix.B}%
+\contentsline {section}{\numberline {C}Παράρτημα Γ: Πίνακας REST endpoints}{68}{appendix.C}%
+\contentsline {section}{\numberline {D}Παράρτημα Δ: Μεταβλητές περιβάλλοντος}{68}{appendix.D}%
+\contentsline {section}{\numberline {E}Παράρτημα Ε: Σχήμα βάσης δεδομένων}{69}{appendix.E}%
+\contentsline {section}{\numberline {F}Παράρτημα ΣΤ: Συσκευοποίηση και ανάπτυξη}{69}{appendix.F}%
+\contentsline {section}{Βιβλιογραφία}{70}{appendix.F}%

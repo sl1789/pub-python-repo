@@ -1,0 +1,12 @@
+\contentsline {table}{\numberline {1}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Ποιοτική επίδραση των βασικών παραμέτρων στην τιμή ενός Ευρωπαϊκού call και put.}}{19}{table.1}%
+\contentsline {table}{\numberline {2}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Επισκόπηση των μεθόδων προσομοίωσης. Η στήλη ``Εξάρτηση'' υποδηλώνει αν διατηρείται η σειρά/αυτοσυσχέτιση των ιστορικών αποδόσεων.}}{37}{table.2}%
+\contentsline {table}{\numberline {3}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Συγκεντρωτικός πίνακας σφαλμάτων ανά μέθοδο (όλες οι τιμές εξάσκησης, $N = 2 \cdot 10^6$ μονοπάτια). Η παύλα δηλώνει μέθοδο μη πρώτη στην κατηγορία της· πλήρης κατάταξη στην Εικόνα~\ref {fig:mc_vs_actual}.}}{61}{table.3}%
+\contentsline {table}{\numberline {4}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Συνοπτικός πίνακας νικητριών μεθόδων ανά κατηγορία, σε όλες τις τιμές εξάσκησης και υπό τον περιορισμό ATM.}}{62}{table.4}%
+\contentsline {table}{\numberline {5}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Καθολικές παράμετροι τιμολόγησης.}}{65}{table.5}%
+\contentsline {table}{\numberline {6}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Παράμετροι ανά μέθοδο προσομοίωσης (τιμές αποθετηρίου).}}{65}{table.6}%
+\contentsline {table}{\numberline {7}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Πλέγματα σαρώσεων ευαισθησίας.}}{66}{table.7}%
+\contentsline {table}{\numberline {8}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Σύνολα μεθόδων στο \texttt {simulation.py}.}}{66}{table.8}%
+\contentsline {table}{\numberline {9}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Υπολογιστικό περιβάλλον.}}{66}{table.9}%
+\contentsline {table}{\numberline {10}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Παραγωγικά Databricks notebooks και τα παράγωγα datasets που εκθέτουν.}}{67}{table.10}%
+\contentsline {table}{\numberline {11}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces REST endpoints της εφαρμογής.}}{68}{table.11}%
+\contentsline {table}{\numberline {12}{\ignorespaces \xpg@aux {variant=monotonic,numerals=arabic}{greek}\ignorespaces Μεταβλητές περιβάλλοντος που διαμορφώνουν την εφαρμογή.}}{68}{table.12}%

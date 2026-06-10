@@ -1,16 +1,71 @@
 \documentclass[12pt]{article}
 
-\usepackage[cm-default]{fontspec}
-\usepackage{xunicode}
-\usepackage{xltxtra}
-\usepackage{xgreek}
-\pagestyle{headings}
-\pagestyle{empty}
-\setmainfont[Mapping=tex-text]{DejaVu Sans}
+\usepackage{fontspec}
+% polyglossia is the modern XeLaTeX replacement for xgreek and ENABLES
+% Greek hyphenation, which is essential for justified text — without it,
+% long Greek words cannot break across lines and inter-word gaps explode.
+\usepackage{polyglossia}
+\setdefaultlanguage[variant=monotonic,numerals=arabic]{greek}
+\setotherlanguage{english}
+\pagestyle{plain}
+% Wider text block: less stretch per line => more even justification.
+\usepackage[a4paper,margin=2.5cm]{geometry}
+% Load DejaVu Sans by file name (works from the MiKTeX TDS tree on Windows
+% without needing the fonts to be installed system-wide). Setting all three
+% NFSS families (main / sans / mono) to the same Unicode font guarantees
+% identical metrics for Greek and Latin text, including inside \texttt{...}.
+\setmainfont{DejaVuSans.ttf}[
+  BoldFont       = DejaVuSans-Bold.ttf,
+  ItalicFont     = DejaVuSans-Oblique.ttf,
+  BoldItalicFont = DejaVuSans-BoldOblique.ttf,
+  Mapping        = tex-text,
+]
+\setsansfont{DejaVuSans.ttf}[
+  BoldFont       = DejaVuSans-Bold.ttf,
+  ItalicFont     = DejaVuSans-Oblique.ttf,
+  BoldItalicFont = DejaVuSans-BoldOblique.ttf,
+  Mapping        = tex-text,
+]
+% DejaVu Sans Mono has matching x-height / cap-height with DejaVu Sans, so
+% inline code (\texttt) no longer appears in a different size or family.
+\setmonofont{DejaVuSansMono.ttf}[
+  BoldFont       = DejaVuSansMono-Bold.ttf,
+  ItalicFont     = DejaVuSansMono-Oblique.ttf,
+  BoldItalicFont = DejaVuSansMono-BoldOblique.ttf,
+  Scale          = MatchLowercase,
+]
+% amsmath must be loaded BEFORE unicode-math; amssymb is intentionally NOT
+% loaded because unicode-math supersedes its symbol definitions and the two
+% conflict on glyphs like \eth, \smallsetminus, \digamma, \backepsilon.
+\usepackage{amsmath}
+% Provide a real Unicode math font so math-mode glyphs render. By overlaying
+% DejaVu Sans on the digits, Latin letters and \mathrm range, in-line math
+% (e.g. $\approx 700$, $10^{7}$, $\mathrm{MAPE}=46.4\%$) keeps the same
+% size and family as the surrounding body text, while operators, Greek
+% letters and big symbols still come from Latin Modern Math.
+\usepackage{unicode-math}
+\setmathfont{latinmodern-math.otf}
+\setmathfont{DejaVuSans.ttf}[range={"0030-"0039,"002E,"002C},Scale=MatchLowercase]
+\setmathfont{DejaVuSans.ttf}[range={up/{latin,Latin}},Scale=MatchLowercase]
+\setmathfont{DejaVuSans.ttf}[range=\mathup,Scale=MatchLowercase]
+\setmathfont{DejaVuSans-Oblique.ttf}[range={it/{latin,Latin}},Scale=MatchLowercase]
+% microtype enables character protrusion under XeTeX, smoothing out the
+% uneven inter-word spacing on fully-justified paragraphs. Font expansion
+% is not available under XeTeX (only pdfTeX/LuaTeX), so it is disabled.
+\usepackage[protrusion=true,expansion=false,final]{microtype}
+% Slightly looser tolerance + emergency stretch as a safety net for very
+% long Greek/Latin technical compounds; greatly reduces overfull lines and
+% the residual "tight river" gaps that microtype alone cannot fix.
+\tolerance=1500
+\emergencystretch=2em
 \usepackage{graphicx}
 \graphicspath{{../databricks/docs/}{./figures/}}
-\usepackage{amsmath}
-\usepackage{amssymb}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,backgrounds}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.18}
 \usepackage{hyperref}
 
 % Minimal \citeyear shim: hard-codes the publication year per bibitem key.
@@ -21,17 +76,19 @@
 \DeclareCiteYear{BaroneAdesi2008}{2008}
 \DeclareCiteYear{Bates2000}{2000}
 \DeclareCiteYear{BlackScholes1973}{1973}
-\DeclareCiteYear{Coleman}{χ.χ.}
+\DeclareCiteYear{Coleman}{2014}
 \DeclareCiteYear{Damji2020}{2020}
 \DeclareCiteYear{DuanSimonato1998}{1998}
 \DeclareCiteYear{Engle1982}{1982}
-\DeclareCiteYear{Gavrilov}{χ.χ.}
+\DeclareCiteYear{Gavrilov}{2000}
 \DeclareCiteYear{Heston1993}{1993}
+\DeclareCiteYear{hull2021}{2021}
 \DeclareCiteYear{Jiang2004}{2004}
 \DeclareCiteYear{MandelbrotFC1997}{1997}
+\DeclareCiteYear{Mandelbrot2004}{2004}
 \DeclareCiteYear{Merton1973}{1973}
 \DeclareCiteYear{Merton1976}{1976}
-\DeclareCiteYear{Moldovan}{χ.χ.}
+\DeclareCiteYear{Moldovan}{2012}
 \DeclareCiteYear{Mulvey1992}{1992}
 \DeclareCiteYear{Nandi1998}{1998}
 \DeclareCiteYear{PaparoditisPolitis2002}{2002}
@@ -46,10 +103,11 @@
 % =====================================================================
 % ΕΞΩΦΥΛΛΟ
 % =====================================================================
+\thispagestyle{empty}
 \title{}
 \vspace{-6ex}
 \begin{center}
-% \includegraphics[scale=1]{pyrforos.eps}
+\includegraphics[width=0.18\textwidth]{pyrforos}
 \end{center}
 \Large{Ε}\large{ΘΝΙΚΟ}
 \Large{Μ}\large{ΕΤΣΟΒΙΟ}
@@ -79,7 +137,7 @@
 \ \\
 \parbox[c]{0.4\textwidth}{\center\textbf{Σπυρίδωνα Π. Λούβη}}
 \vspace{8ex}
-\flushleft
+\noindent
 \begin{tabbing}
 \textbf{Επιβλέπων}: \= Παναγιώτης Δ. Τσανάκας \\
                     \> Καθηγητής
@@ -92,7 +150,9 @@
 % =====================================================================
 \hspace{10pt}
 \newpage
-% \includegraphics{pyrforos.eps}
+\begin{center}
+\includegraphics[width=0.14\textwidth]{pyrforos}
+\end{center}
 \noindent
 \parbox[b]{0.6\textwidth}{\textbf{
 \noindent
@@ -116,31 +176,31 @@
 \vspace{2ex}
 \parbox[c]{0.4\textwidth}{\center\textbf{Σπυρίδωνα Π. Λούβη}}
 \vspace{10ex}
-\flushleft
+\noindent
 \begin{tabbing}
 \textbf{Επιβλέπων}: \= Παναγιώτης Δ. Τσανάκας \\
                     \> Καθηγητής
 \end{tabbing}
 \end{center}
 \noindent
-Εγκρίθηκε από την τριμελή εξεταστική επιτροπή την --εισάγετε ημερομηνία--.
+Εγκρίθηκε από την τριμελή εξεταστική επιτροπή την 11η Ιουνίου 2026.
 
 \begin{center}
 \scriptsize
 \parbox[b]{0.3\textwidth}{\center
     ........................................\\
-    --Εισάγετε ονοματεπώνυμο--\\
-    --Εισάγετε τίτλο--
+    Παναγιώτης Δ. Τσανάκας\\
+    Καθηγητής
 }
 \parbox[b]{0.3\textwidth}{\center
     ........................................\\
-    --Εισάγετε ονοματεπώνυμο--\\
-    --Εισάγετε τίτλο--
+    Γεώργιος Ματσόπουλος\\
+    Καθηγητής
 }
 \parbox[b]{0.3\textwidth}{\center
     ........................................\\
-    --Εισάγετε ονοματεπώνυμο--\\
-    --Εισάγετε τίτλο--
+    Ανδρέας Σταφυλοπάτης\\
+    Ομ. Καθηγητής
 }
 \end{center}
 \vspace{10ex}
@@ -155,8 +215,8 @@
 \vspace{10ex}
 \noindent
 ................................... \\
-\textbf{(Εισάγετε όνομα, αρχικό πατρώνυμου και επίθετο συγγραφέα)} \\
-(Εισάγετε τον απονεμηθέντα τίτλο στο συγγραφέα) \\
+\textbf{Σπυρίδων Π. Λούβης} \\
+Ηλεκτρολόγος Μηχανικός \\
 \vspace{8ex}
 
 \small
@@ -222,7 +282,7 @@ Monte Carlo Simulation, Option Pricing, Black-Scholes-Merton, Apache Spark, Data
 \begin{large}\textbf{Ευχαριστίες}\end{large}
 \end{center}
 
-[Εισάγετε εδώ τις ευχαριστίες προς τον επιβλέποντα, τη σχολή και όσους συνέβαλαν.]
+Ευχαριστώ από καρδιάς τον καθηγητή Π. Τσανάκα για την υπομονή του και τις παροτρύνσεις του, γιατί με βοήθησε όχι μόνο να κλείσω ένα κεφάλαιο αλλά να χτίσω και μία καριέρα. 
 
 \newpage
 
@@ -352,6 +412,99 @@ $$
 
 Σε αντίθεση με το call, εδώ το μέγιστο κέρδος της θέσης long put είναι πεπερασμένο και ισούται με $K - P_0\,e^{rT}$ (αντιστοιχεί στη μηδενική τιμή του υποκείμενου), ενώ η ζημία περιορίζεται στο ασφάλιστρο. Συμμετρικά, η θέση short put έχει μέγιστη ζημία την περίπτωση πτώχευσης του υποκείμενου και χρησιμοποιείται συχνά ως εργαλείο εισόδου σε θέση επί του υποκείμενου σε ελκυστική τιμή.
 
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={
+        group size=2 by 2,
+        horizontal sep=2.0cm,
+        vertical sep=1.8cm
+    },
+    width=7.2cm,
+    height=5.0cm,
+    domain=0:100,
+    samples=300,
+    xmin=0, xmax=100,
+    axis lines=left,
+    enlargelimits=false,
+    xtick=\empty,
+    ytick=\empty,
+    xlabel={$S(T)$},
+    clip=false,
+    every axis title/.style={
+        at={(0.5,1.02)},
+        anchor=south,
+        font=\small
+    },
+    every axis x label/.style={
+        at={(0.5,-0.08)},
+        anchor=north
+    },
+    every axis y label/.style={
+        at={(-0.08,0.5)},
+        anchor=south
+    }
+]
+
+% ============================================================
+% 1. LONG CALL
+% C(T) = max(S(T)-K,0), K=50
+% ============================================================
+\nextgroupplot[
+    title={Long Call},
+    ymin=-5, ymax=55,
+    ylabel={$C(T)$}
+]
+\addplot[very thick, black] {max(x-50,0)};
+\addplot[dashed, black] coordinates {(50,-5) (50,55)};
+\node[font=\footnotesize, anchor=north] at (axis cs:50,-1.5) {$K$};
+
+% ============================================================
+% 2. SHORT CALL
+% C_short(T) = -max(S(T)-K,0), K=50
+% ============================================================
+\nextgroupplot[
+    title={Short Call},
+    ymin=-55, ymax=5,
+    ylabel={$C^{\text{short}}(T)$}
+]
+\addplot[very thick, black] {-max(x-50,0)};
+\addplot[dashed, black] coordinates {(50,-55) (50,5)};
+\node[font=\footnotesize, anchor=south] at (axis cs:50,1.2) {$K$};
+
+% ============================================================
+% 3. LONG PUT
+% P(T) = max(K-S(T),0), K=50
+% ============================================================
+\nextgroupplot[
+    title={Long Put},
+    ymin=-5, ymax=55,
+    ylabel={$P(T)$}
+]
+\addplot[very thick, black] {max(50-x,0)};
+\addplot[dashed, black] coordinates {(50,-5) (50,55)};
+\node[font=\footnotesize, anchor=north] at (axis cs:50,-1.5) {$K$};
+
+% ============================================================
+% 4. SHORT PUT
+% P_short(T) = -max(K-S(T),0), K=50
+% ============================================================
+\nextgroupplot[
+    title={Short Put},
+    ymin=-55, ymax=5,
+    ylabel={$P^{\text{short}}(T)$}
+]
+\addplot[very thick, black] {-max(50-x,0)};
+\addplot[dashed, black] coordinates {(50,-55) (50,5)};
+\node[font=\footnotesize, anchor=south] at (axis cs:50,1.2) {$K$};
+
+\end{groupplot}
+\end{tikzpicture}
+\caption{Διαγράμματα πληρωμής τη λήξη $T$ για τα τέσσερα στοιχειώδη Ευρωπαϊκά δικαιώματα προαίρεσης (long/short call και long/short put) με κοινή τιμή εξάσκησης $K = 50$. Η συνεχής γραμμή απεικονίζει την πληρωμή ως συνάρτηση της τερματικής τιμής $S(T)$ του υποκείμενου, ενώ η διακεκομμένη κατακόρυφη γραμμή σημειώνει την τιμή εξάσκησης.}
+\label{fig:basic_options}
+\end{figure}
+
 \subsection{Ιδιότητες των δικαιωμάτων προαίρεσης}
 
 \subsubsection{Παράγοντες που επηρεάζουν την τιμή των δ.π.}
@@ -398,7 +551,7 @@ $$
 C - P \;=\; S_0 - K\,e^{-rT} .
 $$
 
-Η απόδειξη στηρίζεται στη σύγκριση δύο χαρτοφυλακίων: του χαρτοφυλακίου $A$, που αποτελείται από ένα long call και μετρητά $K\,e^{-rT}$ τοποθετημένα στο ακίνδυνο επιτόκιο, και του χαρτοφυλακίου $B$, που αποτελείται από ένα long put και μία μονάδα του υποκείμενου. Τη λήξη, και τα δύο χαρτοφυλάκια έχουν αξία $\max(S_T, K)$ ανεξάρτητα από τη ρεαλιζόμενη τιμή του υποκείμενου. Λόγω της απουσίας αρμπιτράζ, οι αρχικές αξίες τους πρέπει επίσης να συμπίπτουν, οπότε $C + K\,e^{-rT} = P + S_0$ που είναι η ζητούμενη σχέση. Η ισοτιμία αυτή χρησιμοποιείται στην πράξη τόσο ως κανόνας ελέγχου συνέπειας των τιμών της αγοράς όσο και ως μηχανισμός παραγωγής της τιμής ενός put από εκείνη του αντίστοιχου call (ή το αντίστροφο), αποφεύγοντας έτσι την εκ νέου εκτέλεση μιας προσομοίωσης Monte Carlo.
+Η απόδειξη στηρίζεται στη σύγκριση δύο χαρτοφυλακίων: του χαρτοφυλακίου $A$, που αποτελείται από ένα long call και μετρητά $K\,e^{-rT}$ τοποθετημένα στο ακίνδυνο επιτόκιο, και του χαρτοφυλακίου $B$, που αποτελείται από ένα long put και μία μονάδα του υποκείμενου. Στη λήξη, και τα δύο χαρτοφυλάκια έχουν αξία $\max(S_T, K)$ ανεξάρτητα από την πραγματική τιμή του υποκείμενου τίτλου. Λόγω της απουσίας αρμπιτράζ, οι αρχικές αξίες τους πρέπει επίσης να συμπίπτουν, οπότε $C + K\,e^{-rT} = P + S_0$ που είναι η ζητούμενη σχέση. Η ισοτιμία αυτή χρησιμοποιείται στην πράξη τόσο ως κανόνας ελέγχου συνέπειας των τιμών της αγοράς όσο και ως μηχανισμός παραγωγής της τιμής ενός put από εκείνη του αντίστοιχου call (ή το αντίστροφο), αποφεύγοντας έτσι την εκ νέου εκτέλεση μιας προσομοίωσης Monte Carlo.
 
 \subsection{Επενδυτικές στρατηγικές με δικαιώματα προαίρεσης}
 
@@ -469,6 +622,179 @@ $$
 
 με συνολικό κόστος $C_0 + P_0$ μικρότερο από εκείνο του αντίστοιχου straddle (διότι και τα δύο επιμέρους δικαιώματα είναι OTM και άρα φθηνότερα). Η εκπτωση στο κόστος συνεπάγεται και αύξηση της \emph{«νεκρής ζώνης»} $[K_1, K_2]$ στην οποία η στρατηγική παράγει ζημία ίση με το ασφάλιστρο· για να ενεργοποιηθεί ο μηχανισμός κέρδους πρέπει η τιμή να κινηθεί εκτός αυτής της ζώνης κατά τουλάχιστον το συνολικό ασφάλιστρο. Η στρατηγική προτιμάται από επενδυτές με στοιχειωδώς πιο επιθετική προσδοκία μεταβλητότητας από εκείνη που δικαιολογεί ένα straddle, ή όταν επιθυμείται η ίδια αμφίπλευρη έκθεση με μικρότερο αρχικό capital outlay.
 
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={
+        group size=2 by 3,
+        horizontal sep=2.0cm,
+        vertical sep=2.0cm
+    },
+    width=7.2cm,
+    height=4.8cm,
+    domain=0:100,
+    samples=300,
+    xmin=0, xmax=100,
+    xlabel={$S(T)$},
+    ylabel={Payoff},
+    axis lines=left,
+    enlargelimits=false,
+    xtick=\empty,
+    ytick=\empty,
+    tick style={black},
+    every axis title/.style={
+        at={(0.5,1.02)},
+        anchor=south,
+        font=\small
+    },
+    every axis x label/.style={
+        at={(0.5,-0.08)},
+        anchor=north
+    },
+    every axis y label/.style={
+        at={(-0.08,0.5)},
+        anchor=south
+    },
+    clip=false
+]
+
+% ============================================================
+% 1. COVERED CALL
+% Net = S(T) - max(S(T)-K,0), K=50
+% ============================================================
+\nextgroupplot[
+    title={Covered Call},
+    ymin=-60, ymax=110
+]
+\addplot[very thick, black] {x - max(x-50,0)};
+\addplot[dashed, gray!70!black] {x};
+\addplot[dotted, gray!60!black, line width=1.0pt] {-max(x-50,0)};
+\addplot[dashed, black] coordinates {(50,-60) (50,110)};
+\node[font=\footnotesize, anchor=north] at (axis cs:50,-3) {$K$};
+\node[font=\scriptsize, anchor=west, gray!70!black] at (axis cs:78,82) {long stock};
+\node[font=\scriptsize, anchor=west, gray!60!black] at (axis cs:72,-40) {short call};
+\node[font=\scriptsize, anchor=west] at (axis cs:72,58) {capped payoff};
+\draw[->, thin] (axis cs:72,55) -- (axis cs:83,50);
+\node[font=\scriptsize, anchor=west] at (axis cs:74,15) {exercise zone};
+\draw[->, thin] (axis cs:74,13) -- (axis cs:62,8);
+
+% ============================================================
+% 2. PROTECTIVE PUT
+% Net = S(T) + max(K-S(T),0), K=50
+% ============================================================
+\nextgroupplot[
+    title={Protective Put},
+    ymin=-10, ymax=110
+]
+\addplot[very thick, black] {x + max(50-x,0)};
+\addplot[dashed, gray!70!black] {x};
+\addplot[dotted, gray!60!black, line width=1.0pt] {max(50-x,0)};
+\addplot[dashed, black] coordinates {(50,-10) (50,110)};
+\node[font=\footnotesize, anchor=north] at (axis cs:50,-2) {$K$};
+\node[font=\scriptsize, anchor=west, gray!70!black] at (axis cs:78,82) {long stock};
+\node[font=\scriptsize, anchor=west, gray!60!black] at (axis cs:4,42) {long put};
+\node[font=\scriptsize, anchor=west] at (axis cs:6,72) {downside protection};
+\draw[->, thin] (axis cs:22,70) -- (axis cs:8,50);
+\node[font=\scriptsize, anchor=west] at (axis cs:12,22) {exercise zone};
+\draw[->, thin] (axis cs:24,20) -- (axis cs:35,15);
+
+% ============================================================
+% 3. LONG STRADDLE
+% Net = max(S(T)-K,0) + max(K-S(T),0), K=50
+% ============================================================
+\nextgroupplot[
+    title={Long Straddle},
+    ymin=-10, ymax=60
+]
+\addplot[very thick, black] {max(x-50,0) + max(50-x,0)};
+\addplot[dashed, gray!70!black] {max(x-50,0)};
+\addplot[dotted, gray!60!black, line width=1.0pt] {max(50-x,0)};
+\addplot[dashed, black] coordinates {(50,-10) (50,60)};
+\node[font=\footnotesize, anchor=north] at (axis cs:50,-2) {$K$};
+\node[font=\scriptsize, anchor=west, gray!70!black] at (axis cs:74,25) {long call};
+\node[font=\scriptsize, anchor=west, gray!60!black] at (axis cs:6,28) {long put};
+\node[font=\scriptsize, anchor=west] at (axis cs:58,48) {high volatility payoff};
+\draw[->, thin] (axis cs:74,45) -- (axis cs:88,38);
+\node[font=\scriptsize, anchor=west] at (axis cs:36,8) {minimum at strike};
+\draw[->, thin] (axis cs:48,6) -- (axis cs:50,0);
+
+% ============================================================
+% 4. BULL CALL SPREAD
+% Net = max(S(T)-50,0) - max(S(T)-70,0)
+% ============================================================
+\nextgroupplot[
+    title={Bull Call Spread},
+    ymin=-10, ymax=30
+]
+\addplot[very thick, black] {max(x-50,0) - max(x-70,0)};
+\addplot[dashed, gray!70!black] {max(x-50,0)};
+\addplot[dotted, gray!60!black, line width=1.0pt, restrict y to domain=-10:30] {-max(x-70,0)};
+\addplot[dashed, black] coordinates {(50,-10) (50,30)};
+\addplot[dashed, black] coordinates {(70,-10) (70,30)};
+\node[font=\footnotesize, anchor=north] at (axis cs:50,-1.2) {$K_1$};
+\node[font=\footnotesize, anchor=north] at (axis cs:70,-1.2) {$K_2$};
+\node[font=\scriptsize, anchor=west, gray!70!black] at (axis cs:73,22) {long call};
+\node[font=\scriptsize, anchor=west, gray!60!black] at (axis cs:75,-9) {short call};
+\node[font=\scriptsize, anchor=west] at (axis cs:72,16) {capped upside};
+\draw[->, thin] (axis cs:72,14) -- (axis cs:84,20);
+\node[font=\scriptsize, anchor=west] at (axis cs:53,5) {spread width};
+\draw[<->, thin] (axis cs:50,3) -- (axis cs:70,3);
+
+% ============================================================
+% 5. BUTTERFLY SPREAD
+% Net = max(S-40,0) - 2max(S-50,0) + max(S-60,0)
+% ============================================================
+\nextgroupplot[
+    title={Butterfly Spread},
+    ymin=-5, ymax=15
+]
+\addplot[very thick, black] {max(x-40,0) - 2*max(x-50,0) + max(x-60,0)};
+\addplot[dashed, gray!70!black] {max(x-40,0)};
+\addplot[dotted, gray!60!black, line width=1.0pt, restrict y to domain=-5:15] {-2*max(x-50,0)};
+\addplot[dash dot, gray!50!black] {max(x-60,0)};
+\addplot[dashed, black] coordinates {(40,-5) (40,15)};
+\addplot[dashed, black] coordinates {(50,-5) (50,15)};
+\addplot[dashed, black] coordinates {(60,-5) (60,15)};
+\node[font=\footnotesize, anchor=north] at (axis cs:40,-0.8) {$K_1$};
+\node[font=\footnotesize, anchor=north] at (axis cs:50,-0.8) {$K_2$};
+\node[font=\footnotesize, anchor=north] at (axis cs:60,-0.8) {$K_3$};
+\node[font=\scriptsize, anchor=west, gray!70!black] at (axis cs:66,8.5) {$+C(K_1)$};
+\node[font=\scriptsize, anchor=west, gray!60!black] at (axis cs:64,-3.0) {$-2C(K_2)$};
+\node[font=\scriptsize, anchor=west, gray!50!black] at (axis cs:66,1.5) {$+C(K_3)$};
+\node[font=\scriptsize, anchor=west] at (axis cs:52,12) {peak payoff};
+\draw[->, thin] (axis cs:56,11) -- (axis cs:50,10);
+\node[font=\scriptsize, anchor=west] at (axis cs:9,2) {low volatility zone};
+\draw[->, thin] (axis cs:30,2.8) -- (axis cs:49,5);
+
+% ============================================================
+% 6. LONG STRANGLE
+% Net = max(40-S,0) + max(S-60,0)
+% ============================================================
+\nextgroupplot[
+    title={Long Strangle},
+    ymin=-10, ymax=45
+]
+\addplot[very thick, black] {max(40-x,0) + max(x-60,0)};
+\addplot[dashed, gray!70!black] {max(40-x,0)};
+\addplot[dotted, gray!60!black, line width=1.0pt] {max(x-60,0)};
+\addplot[dashed, black] coordinates {(40,-10) (40,45)};
+\addplot[dashed, black] coordinates {(60,-10) (60,45)};
+\node[font=\footnotesize, anchor=north] at (axis cs:40,-1.2) {$K_1$};
+\node[font=\footnotesize, anchor=north] at (axis cs:60,-1.2) {$K_2$};
+\node[font=\scriptsize, anchor=west, gray!70!black] at (axis cs:5,22) {long put};
+\node[font=\scriptsize, anchor=west, gray!60!black] at (axis cs:73,16) {long call};
+\node[font=\scriptsize, anchor=west] at (axis cs:58,36) {profit from large move};
+\draw[->, thin] (axis cs:78,34) -- (axis cs:90,30);
+\node[font=\scriptsize, anchor=west] at (axis cs:42,5) {dead zone};
+\draw[<->, thin] (axis cs:40,3) -- (axis cs:60,3);
+
+\end{groupplot}
+\end{tikzpicture}
+\caption{Διαγράμματα πληρωμής τη λήξη $T$ για τις έξι κλασσικές στρατηγικές δικαιωμάτων προαίρεσης που παρουσιάστηκαν στην ενότητα. Η συνεχής μαύρη γραμμή απεικονίζει τη συνολική πληρωμή ως συνάρτηση της τερματικής τιμής $S(T)$ του υποκείμενου, ενώ οι διακεκομμένες/στικτές γραμμές αναλύουν τη θέση στα επιμέρους συστατικά της (long/short stock, long/short call ή put).}
+\label{fig:option_strategies}
+\end{figure}
+
 \newpage
 
 % =====================================================================
@@ -491,9 +817,9 @@ $$
 \Pr\bigl(X_{t+s} \in A \,\big|\, \{X_u\}_{u \leq t}\bigr) \;=\; \Pr\bigl(X_{t+s} \in A \,\big|\, X_t\bigr).
 $$
 
-Η υπόθεση αυτή είναι σε στενή αντιστοιχία με την υπόθεση της \emph{αποδοτικής αγοράς} (efficient market hypothesis), σύμφωνα με την οποία όλη η διαθέσιμη πληροφορία είναι ήδη ενσωματωμένη στην τρέχουσα τιμή — αν δεν ήταν, η διαφορά θα συνιστούσε εκμεταλλεύσιμη ευκαιρία αρμπιτράζ μέσω της οποίας θα προκαλούνταν άμεση εξισορρόπηση.
+Η υπόθεση αυτή είναι σε στενή αντιστοιχία με την υπόθεση της \emph{αποδοτικής αγοράς} (efficient market hypothesis), σύμφωνα με την οποία όλη η διαθέσιμη πληροφορία είναι ήδη ενσωματωμένη στην τρέχουσα τιμή - αν δεν ήταν, η διαφορά θα συνιστούσε εκμεταλλεύσιμη ευκαιρία αρμπιτράζ μέσω της οποίας θα προκαλούνταν άμεση εξισορρόπηση.
 
-Θεμέλιος λίθος όλων των στοχαστικών μοντέλων που χρησιμοποιούνται στη συνέχεια είναι η \emph{κίνηση Brown} ή \emph{διαδικασία Wiener} $\{W_t\}_{t \geq 0}$, που ορίζεται από τις ιδιότητες: $W_0 = 0$, οι αυξήσεις $W_{t+s} - W_t$ είναι ανεξάρτητες των $\{W_u\}_{u \leq t}$, ακολουθούν κανονική κατανομή $\mathcal{N}(0, s)$, και οι ρεαλιζόμενες διαδρομές είναι σχεδόν παντού συνεχείς. Σε διαφορική μορφή γράφεται $dW_t = \varepsilon\,\sqrt{dt}$, όπου $\varepsilon \sim \mathcal{N}(0, 1)$. Η \emph{γενικευμένη διαδικασία Wiener} επιτρέπει την επαλληλία ενός σταθερού όρου παρασύρσεως (drift) και ενός όρου διακύμανσης:
+Θεμέλιος λίθος όλων των στοχαστικών μοντέλων που χρησιμοποιούνται στη συνέχεια είναι η \emph{κίνηση Brown} ή \emph{διαδικασία Wiener} $\{W_t\}_{t \geq 0}$, που ορίζεται από τις ιδιότητες: $W_0 = 0$, οι αυξήσεις $W_{t+s} - W_t$ είναι ανεξάρτητες των $\{W_u\}_{u \leq t}$, ακολουθούν κανονική κατανομή $\mathcal{N}(0, s)$, και οι πραγματοποιημένες διαδρομές είναι σχεδόν παντού συνεχείς. Σε διαφορική μορφή γράφεται $dW_t = \varepsilon\,\sqrt{dt}$, όπου $\varepsilon \sim \mathcal{N}(0, 1)$. Η \emph{γενικευμένη διαδικασία Wiener} επιτρέπει την επαλληλία ενός σταθερού όρου παρασύρσεως (drift) και ενός όρου διακύμανσης:
 
 $$
 dX_t \;=\; a\,dt \,+\, b\,dW_t,
@@ -551,7 +877,7 @@ $$
 S_{t+\Delta t} \;=\; S_t \cdot \exp\!\Bigl[\bigl(r - \tfrac{1}{2}\sigma^2\bigr)\Delta t \,+\, \sigma\sqrt{\Delta t}\,\varepsilon_t\Bigr], \qquad \varepsilon_t \overset{\text{iid}}{\sim} \mathcal{N}(0, 1),
 $$
 
-που είναι ακριβής (όχι απλώς πρώτης τάξης) διακριτοποίηση χάρη στην κλειστή λύση του GBM. Στο τέλος του μονοπατιού υπολογίζεται το payoff $\Pi^{(i)} = \max(S_T^{(i)} - K,\,0)$ ή $\max(K - S_T^{(i)},\, 0)$ κατά περίπτωση, και ο δειγματικός μέσος εξάγει την εκτίμηση της δίκαιης τιμής. Η ανάλυση σύγκλισης του Κεφαλαίου~9 (Εικόνα~\ref{fig:convergence}) επιβεβαιώνει εμπειρικά την $O(N^{-1/2})$ συμπεριφορά: το σφάλμα σταθεροποιείται γύρω από τα $N = 5 \cdot 10^5$ μονοπάτια και η μεταβολή μεταξύ $5 \cdot 10^6$ και $10^7$ μονοπατιών είναι μικρότερη από $0{,}05\%$.
+που είναι ακριβής (όχι απλώς πρώτης τάξης) διακριτοποίηση χάρη στην κλειστή λύση του GBM. Στο τέλος του μονοπατιού υπολογίζεται το payoff $\Pi^{(i)} = \max(S_T^{(i)} - K,\,0)$ ή $\max(K - S_T^{(i)},\, 0)$ κατά περίπτωση, και ο δειγματικός μέσος εξάγει την εκτίμηση της δίκαιης τιμής. Η ανάλυση σύγκλισης του Κεφαλαίου~9 (ενότητα~\ref{sec:convergence}) επιβεβαιώνει εμπειρικά την $O(N^{-1/2})$ συμπεριφορά: το σφάλμα σταθεροποιείται γύρω από τα $N = 5 \cdot 10^5$ μονοπάτια και η μεταβολή μεταξύ $5 \cdot 10^6$ και $10^7$ μονοπατιών είναι μικρότερη από $0{,}05\%$.
 
 \subsection{Το λήμμα Itô}
 
@@ -624,7 +950,7 @@ $$
 \frac{\partial V}{\partial t} \,+\, \tfrac{1}{2}\sigma^2 S^2\,\frac{\partial^2 V}{\partial S^2} \,+\, r\,S\,\frac{\partial V}{\partial S} \,-\, r\,V \;=\; 0.
 $$
 
-Η εξίσωση αυτή είναι παραβολική μερική διαφορική εξίσωση δεύτερης τάξης, αντιστρέψιμη με κατάλληλη αλλαγή μεταβλητής στην κλασική εξίσωση θερμότητας. Είναι γραμμική, και για να καθοριστεί μονοσήμαντα η λύση χρειάζεται ένα συνοριακό-τερματικό πρόβλημα: για το Ευρωπαϊκό call χρησιμοποιείται η τερματική συνθήκη $V(S, T) = (S - K)^+$, ενώ για το Ευρωπαϊκό put η $V(S, T) = (K - S)^+$. Αξιοσημείωτο είναι ότι η παράμετρος $\mu$ (η πραγματική αναμενόμενη απόδοση του υποκείμενου) \emph{δεν εμφανίζεται} στην εξίσωση: η δίκαιη τιμή του δικαιώματος εξαρτάται αποκλειστικά από τη μεταβλητότητα $\sigma$, το ακίνδυνο επιτόκιο $r$ και τα χαρακτηριστικά $K$ και $T$ του ίδιου του δικαιώματος. Αυτό συνδέεται άμεσα με την έννοια του \emph{ουδέτερου ως προς κίνδυνο μέτρου} $\mathbb{Q}$ (\S~3.3): η ίδια τιμή προκύπτει είτε ως λύση της παραπάνω Δ.Ε.\ είτε ως προεξοφλημένη προσδοκία $V_0 = e^{-rT}\mathbb{E}^{\mathbb{Q}}[\Pi(S_T)]$, αρκεί η δειγματοληψία να γίνει υπό το μέτρο που αντικαθιστά το $\mu$ από το $r$ — μια ισοδυναμία που αποδεικνύεται αυστηρά μέσω του θεωρήματος Girsanov.
+Η εξίσωση αυτή είναι παραβολική μερική διαφορική εξίσωση δεύτερης τάξης, αντιστρέψιμη με κατάλληλη αλλαγή μεταβλητής στην κλασική εξίσωση θερμότητας. Είναι γραμμική, και για να καθοριστεί μονοσήμαντα η λύση χρειάζεται ένα συνοριακό-τερματικό πρόβλημα: για το Ευρωπαϊκό call χρησιμοποιείται η τερματική συνθήκη $V(S, T) = (S - K)^+$, ενώ για το Ευρωπαϊκό put η $V(S, T) = (K - S)^+$. Αξιοσημείωτο είναι ότι η παράμετρος $\mu$ (η πραγματική αναμενόμενη απόδοση του υποκείμενου) \emph{δεν εμφανίζεται} στην εξίσωση: η δίκαιη τιμή του δικαιώματος εξαρτάται αποκλειστικά από τη μεταβλητότητα $\sigma$, το ακίνδυνο επιτόκιο $r$ και τα χαρακτηριστικά $K$ και $T$ του ίδιου του δικαιώματος. 
 
 \subsubsection{Τύποι κλειστής μορφής}
 
@@ -664,7 +990,7 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
 
 Παρά τη μαθηματική του κομψότητα και τη βαθιά επιρροή του στη χρηματοοικονομική πρακτική, το μοντέλο Black–Scholes–Merton στηρίζεται σε ένα σύνολο εξιδανικευμένων υποθέσεων (\S~3.5.1) που η εμπειρική παρατήρηση παραβιάζει συστηματικά. Οι παραβιάσεις αυτές δεν είναι ζητήματα δεύτερης τάξης: αποτυπώνονται με ορατό και ποσοτικά μετρήσιμο τρόπο τόσο στις ίδιες τις τιμές των δικαιωμάτων που διαπραγματεύεται η αγορά (Εικόνα~\ref{fig:mc_vs_actual}) όσο και στις στατιστικές των ίδιων των αποδόσεων του υποκείμενου. Στο παρόν κεφάλαιο εντοπίζονται οι σημαντικότερες αδυναμίες και διαμορφώνεται έτσι το κίνητρο για τις εμπειρικές μεθόδους του Κεφαλαίου~6, οι οποίες αποσκοπούν να αντιμετωπίσουν τις παραβιάσεις χωρίς να θυσιάσουν τη χρησιμότητα της προσομοίωσης Monte Carlo.
 
-Οι κυριότερες αδυναμίες ομαδοποιούνται σε τρεις κατηγορίες. Πρώτη κατηγορία είναι οι παραβιάσεις των οικονομικών υποθέσεων: η αγορά δεν είναι πλήρως αποδοτική (\S~4.2), ενώ η συμπεριφορά των επενδυτών παρεκκλίνει από το ορθολογικό πρότυπο των κλασσικών υποδειγμάτων (\S~4.5). Δεύτερη είναι οι παραβιάσεις των στοχαστικών υποθέσεων: η μεταβλητότητα δεν είναι σταθερή (\S~4.3), παρατηρούνται τάσεις και συσχετίσεις στις αποδόσεις (\S~4.4) και η τιμή του υποκείμενου εμφανίζει άλματα (\S~4.6). Τρίτη και ίσως η εμπειρικά πιο ευδιάκριτη είναι η παραβίαση της κανονικής κατανομής των αποδόσεων: η εμπειρική κατανομή είναι λεπτόκυρτη και έχει βαρύτερες ουρές από εκείνες που προβλέπει η κίνηση Brown (\S~4.7). Η συνολική επίδραση αυτών των αδυναμιών είναι ότι το μοντέλο BSM, παρά την κομψότητά του, παράγει συστηματικά λανθασμένες τιμές δικαιωμάτων, ιδιαίτερα για OTM puts και για περιόδους αυξημένης αγοράς αναταραχής.
+Οι κυριότερες αδυναμίες ομαδοποιούνται σε τρεις κατηγορίες. Πρώτη κατηγορία είναι οι παραβιάσεις των οικονομικών υποθέσεων: η αγορά δεν είναι πλήρως αποδοτική (\S~4.2), ενώ η συμπεριφορά των επενδυτών παρεκκλίνει από το ορθολογικό πρότυπο των κλασσικών υποδειγμάτων (\S~4.5). Δεύτερη είναι οι παραβιάσεις των στοχαστικών υποθέσεων: η μεταβλητότητα δεν είναι σταθερή (\S~4.3), παρατηρούνται τάσεις και συσχετίσεις στις αποδόσεις (\S~4.4) και η τιμή του υποκείμενου εμφανίζει άλματα (\S~4.6). Τρίτη και ίσως η εμπειρικά πιο ευδιάκριτη είναι η παραβίαση της κανονικής κατανομής των αποδόσεων: η εμπειρική κατανομή είναι λεπτόκυρτη και έχει βαρύτερες ουρές από εκείνες που προβλέπει η κίνηση Brown (\S~4.7). Η συνολική επίδραση αυτών των αδυναμιών είναι ότι το μοντέλο BSM, παρά την κομψότητά του, παράγει συστηματικά λανθασμένες τιμές δικαιωμάτων, ιδιαίτερα για OTM puts και για περιόδους αυξημένης αναταραχής στην αγορά.
 
 \subsection{Η υπόθεση της αποδοτικής αγοράς και η πληροφόρηση}
 
@@ -674,7 +1000,7 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
 
 \subsection{Η σταθερότητα της διακύμανσης}
 
-Η υπόθεση ότι η μεταβλητότητα $\sigma$ είναι σταθερή είναι ίσως η εμπειρικά πιο ευδιάκριτα παραβιαζόμενη υπόθεση του μοντέλου. Δύο διαφορετικά είδη παραβίασης παρατηρούνται. Πρώτον, η \emph{διαχρονική μεταβλητότητα της μεταβλητότητας}: ήρεμες περιόδους με χαμηλή ημερήσια διακύμανση διαδέχονται έντονες περιόδους με δεκαπλάσιες τιμές διακύμανσης (φαινόμενο γνωστό ως \emph{volatility clustering}, Mandelbrot 1963). Η πτώση της Lehman Brothers τον Σεπτέμβριο 2008 ή η πανδημική αναταραχή του Μαρτίου 2020 αποτελούν χαρακτηριστικά παραδείγματα όπου η ετησιοποιημένη μεταβλητότητα του δείκτη S\&P~500 πέρασε από επίπεδα $10$--$15\%$ σε επίπεδα $80$--$100\%$ μέσα σε λίγες ημέρες, διαφορά κατά μία τάξη μεγέθους που καθιστά οποιαδήποτε τιμή δικαιώματος βασισμένη στην ιστορική $\sigma$ άμεσα παρωχημένη.
+Η υπόθεση ότι η μεταβλητότητα $\sigma$ είναι σταθερή είναι ίσως η εμπειρικά πιο ευδιάκριτα παραβιαζόμενη υπόθεση του μοντέλου. Δύο διαφορετικά είδη παραβίασης παρατηρούνται. Πρώτον, η \emph{διαχρονική μεταβλητότητα της μεταβλητότητας}: ήρεμες περιόδοι με χαμηλή ημερήσια διακύμανση διαδέχονται έντονες περιόδους με δεκαπλάσιες τιμές διακύμανσης (φαινόμενο γνωστό ως \emph{volatility clustering}, Mandelbrot 1963). Η πτώση της Lehman Brothers τον Σεπτέμβριο 2008 ή η πανδημική αναταραχή του Μαρτίου 2020 αποτελούν χαρακτηριστικά παραδείγματα όπου η ετησιοποιημένη μεταβλητότητα του δείκτη S\&P~500 πέρασε από επίπεδα $10$--$15\%$ σε επίπεδα $80$--$100\%$ μέσα σε λίγες ημέρες, διαφορά κατά μία τάξη μεγέθους που καθιστά οποιαδήποτε τιμή δικαιώματος βασισμένη στην ιστορική $\sigma$ άμεσα παρωχημένη.
 
 Δεύτερον, ακόμη και σε δεδομένη χρονική στιγμή, η εμπεριεχόμενη μεταβλητότητα δεν είναι σταθερή ως προς την τιμή εξάσκησης: σχηματίζεται το λεγόμενο \emph{volatility smile} ή το ασύμμετρο \emph{volatility skew}, με την implied vol να αυξάνεται καθώς απομακρυνόμαστε από το ATM επίπεδο, και ιδιαίτερα προς τα OTM puts. Η συστηματική αυτή απόκλιση αποτυπώνεται και στην εμπειρική ανάλυση του παρόντος έργου: ενώ στο πλήρες δείγμα τιμών εξάσκησης το σφάλμα MAPE των μεθόδων με ενιαία ιστορική $\sigma$ φτάνει το $50\%$ για τα puts, υπό τον περιορισμό ATM ($|K/S_0 - 1| \leq 5\%$) όπου το skew πρακτικά μηδενίζεται, το σφάλμα της \texttt{window} υποχωρεί στο $28{,}5\%$ (Εικόνα~\ref{fig:mc_vs_actual_atm}). Οι σύγχρονες απαντήσεις στο πρόβλημα περιλαμβάνουν τα μοντέλα \emph{stochastic volatility} (Hull–White 1987, Heston 1993), τα μοντέλα \emph{local volatility} (Dupire 1994, Derman–Kani 1994) και τα φιλτραρισμένα μοντέλα GARCH που υιοθετούνται στο Κεφάλαιο~6 (\texttt{fhs}/\texttt{fhs\_rn}).
 
@@ -698,7 +1024,7 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
 
 \subsection{Η κίνηση Brown και η κανονική κατανομή}
 
-Η αδυναμία που συνοψίζει όλες τις προηγούμενες είναι η εμπειρική απόρριψη της κανονικής κατανομής των ημερήσιων αποδόσεων. Η κίνηση Brown επιβάλλει αυστηρά το $\ln(S_{t+\Delta t}/S_t) \sim \mathcal{N}(\cdot,\, \sigma^2 \Delta t)$, με κύρτωση ίση με $3$. Στις πραγματικές χρηματιστηριακές σειρές αποδόσεων η εμπειρική κύρτωση είναι σταθερά μεγαλύτερη: για τον δείκτη S\&P~500 από το 1927 (που είναι και το ίδιο σύνολο δεδομένων που χρησιμοποιείται στο παρόν έργο, πίνακας \texttt{default.yfinance\_historical\_data}) η εκτιμώμενη ημερήσια κύρτωση ξεπερνά συστηματικά το $20$, μια διαφορά μεγέθους που σημαίνει πως η κανονική κατανομή υπεκτιμά τις πιθανότητες ακραίων εκβάσεων κατά αρκετές τάξεις μεγέθους.
+Η αδυναμία που συνοψίζει όλες τις προηγούμενες είναι η εμπειρική απόρριψη της κανονικής κατανομής των ημερήσιων αποδόσεων. Η κίνηση Brown επιβάλλει αυστηρά το $\ln(S_{t+\Delta t}/S_t) \sim \mathcal{N}(\cdot,\, \sigma^2 \Delta t)$, με κύρτωση ίση με $3$. Στις πραγματικές χρηματιστηριακές σειρές αποδόσεων η εμπειρική κύρτωση είναι σταθερά μεγαλύτερη: για τον δείκτη S\&P~500 από το 1927 (που είναι και το ίδιο σύνολο δεδομένων που χρησιμοποιείται στο παρόν έργο, πίνακας \texttt{default.yfinance\_historical\_data}) η εκτιμώμενη ημερήσια κύρτωση ξεπερνά συστηματικά το $20$, μια διαφορά μεγέθους που σημαίνει πως η κανονική κατανομή υποεκτιμά τις πιθανότητες ακραίων εκβάσεων κατά αρκετές τάξεις μεγέθους.
 
 Η συνέπεια στην τιμολόγηση είναι άμεση και πρακτική. Για OTM puts, η δίκαιη τιμή είναι ουσιαστικά ένα ολοκλήρωμα της αριστερής ουράς της κατανομής αποδόσεων· εάν η κατανομή έχει βαρύτερη αριστερή ουρά από εκείνη που υποθέτει το BSM, η αγορά θα τιμολογεί συστηματικά υψηλότερα από όσο προβλέπει το μοντέλο, παράγοντας ακριβώς το παρατηρούμενο volatility skew. Οι μέθοδοι του Κεφαλαίου~6 αντιμετωπίζουν αυτό το πρόβλημα με τρεις διαφορετικές στρατηγικές: (i) απευθείας δειγματοληψία από την εμπειρική κατανομή (\texttt{historical}, \texttt{window}, \texttt{block\_bootstrap}, \texttt{fhs}), που εξ ορισμού αποτυπώνει τις παρατηρηθείσες παχιές ουρές· (ii) χρήση παραμετρικών εναλλακτικών με βαρύτερες ουρές, όπως η κατανομή Student-$t$ (\S~6.3)· και (iii) πολυκλασματικά μοντέλα όπως το MMAR (\S~6.4), που παράγουν παχιές ουρές μέσω πολλαπλασιαστικών καταρρακτών χωρίς να απομακρύνονται πλήρως από το πλαίσιο της κίνησης Brown. Η εμπειρική σύγκριση των τριών αυτών στρατηγικών αποτελεί το αντικείμενο των πειραμάτων του Κεφαλαίου~9.
 
@@ -710,19 +1036,19 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
 \section{Σχετική βιβλιογραφία}
 
 \subsection{Επισκόπηση}
-Το παρόν κεφάλαιο συγκεντρώνει την επιλεγμένη διεθνή βιβλιογραφία που πλαισιώνει τα τρία τεχνικά σκέλη της διπλωματικής: (i) τις επεκτάσεις του μοντέλου Black–Scholes–Merton και την προσομοίωση Monte Carlo για την τιμολόγηση δικαιωμάτων, (ii) τη χρήση κατανεμημένων και παράλληλων υπολογιστικών αρχιτεκτονικών στη χρηματοοικονομική, και (iii) τα στατιστικά και μηχανικής μάθησης εργαλεία υποστήριξης που εμφανίζονται στις γειτονικές περιοχές της ανάλυσης χρονοσειρών μετοχών και της διαχείρισης χαρτοφυλακίων. Στόχος δεν είναι μια εξαντλητική επισκόπηση των τριών αυτών πεδίων, αλλά η τεκμηρίωση των επιλογών μοντελοποίησης και αρχιτεκτονικής που γίνονται στα επόμενα κεφάλαια, σε αντιπαραβολή με ώριμες ή χαρακτηριστικές μελέτες της διεθνούς βιβλιογραφίας.
+Το παρόν κεφάλαιο συγκεντρώνει την επιλεγμένη διεθνή βιβλιογραφία που πλαισιώνει τα τρία τεχνικά σκέλη της διπλωματικής: (i) τις επεκτάσεις του μοντέλου Black–Scholes–Merton και την προσομοίωση Monte Carlo για την τιμολόγηση δικαιωμάτων, (ii) τη χρήση κατανεμημένων και παράλληλων υπολογιστικών αρχιτεκτονικών στη χρηματοοικονομική, και (iii) τα στατιστικά και mahine learning εργαλεία υποστήριξης που εμφανίζονται στις γειτονικές περιοχές της ανάλυσης χρονοσειρών μετοχών και της διαχείρισης χαρτοφυλακίων. Στόχος δεν είναι μια εξαντλητική επισκόπηση των τριών αυτών πεδίων, αλλά η τεκμηρίωση των επιλογών μοντελοποίησης και αρχιτεκτονικής που γίνονται στα επόμενα κεφάλαια, σε αντιπαραβολή με ώριμες ή χαρακτηριστικές μελέτες της διεθνούς βιβλιογραφίας.
 
 \subsection{Επεκτάσεις του BSM και τιμολόγηση με Monte Carlo}
 Η ευρεία αποδοχή του μοντέλου των Black και Scholes~\citeyear{BlackScholes1973} και του Merton~\citeyear{Merton1973} στη βιομηχανία συνοδεύτηκε από συνεχείς εμπειρικές ενδείξεις ότι η υπόθεση σταθερής διακύμανσης δεν συμβιβάζεται ούτε με το παρατηρούμενο implied volatility smile ούτε με το βαρύ αριστερό άκρο της κατανομής αποδόσεων. Η πλέον επιδραστική απόκριση είναι το μοντέλο στοχαστικής μεταβλητότητας του Heston~\citeyear{Heston1993}, το οποίο επιτρέπει συσχέτιση $\rho$ μεταξύ απόδοσης και διακύμανσης και παρέχει ημι-κλειστή λύση για ευρωπαϊκά δικαιώματα μέσω αντίστροφου μετασχηματισμού Fourier.
 
 Ο Nandi~\citeyear{Nandi1998}, δουλεύοντας πάνω σε ενδοημερήσιες τιμές δικαιωμάτων του S\&P~500, ποσοτικοποιεί την πραγματική σημασία της συσχέτισης $\rho$: η ανεμπόδιστη εκδοχή με $\rho \neq 0$ μειώνει σημαντικά τόσο τα σφάλματα τιμολόγησης out-of-the-money όσο και τα σφάλματα αντιστάθμισης σε σχέση με την περιορισμένη εκδοχή $\rho = 0$. Η συσχέτιση μόχλευσης παύει έτσι να είναι καλλωπιστική παράμετρος και αναγνωρίζεται ως οικονομικά ουσιώδες χαρακτηριστικό.
 
-Ο Bates~\citeyear{Bates2000} προχωρά ένα βήμα παραπέρα: συγκρίνει το καθαρό μοντέλο στοχαστικής μεταβλητότητας με μια επέκτασή του που περιλαμβάνει διαδικασία αλμάτων Poisson στις αποδόσεις, στο πνεύμα του Merton~\citeyear{Merton1976}. Πάνω σε δείγμα δικαιωμάτων S\&P~500 futures της περιόδου 1988--1993, καταδεικνύει ότι το μοντέλο SV από μόνο του απαιτεί μη ρεαλιστικά υψηλές τιμές της μεταβλητότητας της μεταβλητότητας για να αναπαραγάγει την παρατηρούμενη ασυμμετρία, ενώ η προσθήκη αλμάτων αποκαθιστά εύλογες παραμέτρους με κόστος μια συχνότητα μεγάλων πτώσεων που τελικά δεν επιβεβαιώθηκε ex post — ενδείκνυον ενός ``peso problem'' και ενός μόνιμου crash premium μετά το 1987.
+Ο Bates~\citeyear{Bates2000} προχωρά ένα βήμα παραπέρα: συγκρίνει το καθαρό μοντέλο στοχαστικής μεταβλητότητας με μια επέκτασή του που περιλαμβάνει διαδικασία αλμάτων Poisson στις αποδόσεις, στο πνεύμα του Merton~\citeyear{Merton1976}. Πάνω σε δείγμα δικαιωμάτων S\&P~500 futures της περιόδου 1988--1993, καταδεικνύει ότι το μοντέλο SV από μόνο του απαιτεί μη ρεαλιστικά υψηλές τιμές της μεταβλητότητας για να αναπαραγάγει την παρατηρούμενη ασυμμετρία, ενώ η προσθήκη αλμάτων αποκαθιστά εύλογες παραμέτρους με κόστος μια συχνότητα μεγάλων πτώσεων που τελικά δεν επιβεβαιώθηκε ex post καταδεικνύοντας έτσι ενα ``peso problem'' και ενα μόνιμο crash premium μετά το 1987.
 
 Όταν το πρόβλημα τιμολόγησης δεν επιδέχεται κλειστή ή ημι-κλειστή λύση, η προσομοίωση Monte Carlo παραμένει το κύριο εργαλείο, ωστόσο το υπολογιστικό κόστος γίνεται περιοριστικός παράγοντας. Οι Zhang, Gong, Peng και Liu~\citeyear{ZhangBSDE2011} προτείνουν μια πρώιμη υλοποίηση τιμολόγησης δικαιωμάτων μέσω Backward Stochastic Differential Equations (BSDEs) πάνω σε MapReduce, όπου κάθε χωρικό σημείο του πλέγματος αντιστοιχίζεται σε μια Map εργασία και κάθε χρονικό βήμα σε αλυσιδωτή ροή Reduce. Η εργασία είναι ενδεικτική των ορίων του Hadoop — η ανά βήμα μεταφορά δεδομένων στο δίσκο κυριαρχεί όταν το πλέγμα εκλεπτύνεται — και προοιωνίζεται την μετάβαση σε in-memory μηχανές, εξέλιξη που υλοποιείται με την έλευση του Apache Spark~\citeyear{Damji2020}. Στην παρούσα διπλωματική η ίδια διαπίστωση οδηγεί στην επιλογή του Spark/Databricks ως υποδομής εκτέλεσης για τους αλγορίθμους Monte Carlo του Κεφαλαίου~7.
 
 \subsection{Κατανεμημένος και παράλληλος υπολογισμός στη χρηματοοικονομική}
-Η σύζευξη χρηματοοικονομικών αλγορίθμων με κατανεμημένες αρχιτεκτονικές έχει διπλή καταγωγή: από τη μία πλευρά, την παράδοση των επιχειρησιακών ερευνών και της στοχαστικής βελτιστοποίησης, και από την άλλη, την πιο πρόσφατη παράδοση των MapReduce / Spark πλατφορμών.
+Η σύζευξη χρηματοοικονομικών αλγορίθμων με κατανεμημένες αρχιτεκτονικές έχει διπλή καταγωγή: από τη μία πλευρά, την παράδοση της επιχειρησιακής έρευνας και της στοχαστικής βελτιστοποίησης, και από την άλλη, την πιο πρόσφατη παράδοση των MapReduce / Spark πλατφορμών.
 
 Στην πρώτη γραμμή ανήκει η εργασία των Mulvey και Vladimirou~\citeyear{Mulvey1992}, οι οποίοι διατυπώνουν τον δυναμικό σχεδιασμό χαρτοφυλακίου ως πολυσταδιακό στοχαστικό γενικευμένο δίκτυο πάνω σε δένδρο σεναρίων και επιλύουν το πρόβλημα με τον αλγόριθμο progressive hedging των Rockafellar και Wets~\citeyear{RockafellarWets1991}. Η αποσύνθεση κατά σενάρια είναι ρητά σχεδιασμένη ώστε να αξιοποιεί παράλληλους επεξεργαστές και αποτελεί έγκαιρη ένδειξη ότι η πολυπλοκότητα της χρηματοοικονομικής βελτιστοποίησης απαιτεί πέρα από αλγοριθμική και υπολογιστική κλιμάκωση. Στο πλαίσιο αυτό η ίδια η παραγωγή σεναρίων είναι ένα Monte Carlo βήμα, ανάλογο με την παραγωγή τροχιών στην παρούσα εργασία.
 
@@ -742,7 +1068,7 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
 \subsection{Συμβολή της παρούσας εργασίας έναντι της βιβλιογραφίας}
 Συνολικά, η βιβλιογραφία υποστηρίζει τρεις διαπιστώσεις που θεμελιώνουν το σχεδιασμό της παρούσας εργασίας. Πρώτον, καμία από τις απλές επεκτάσεις του BSM δεν επαρκεί από μόνη της για να περιγράψει ταυτόχρονα το smile, την ασυμμετρία και τη συμπεριφορά της ρητής μεταβλητότητας: μια συστηματική αντιπαραβολή πολλαπλών γεννητριών τροχιών — με και χωρίς άλματα, με και χωρίς στοχαστική μεταβλητότητα, με μη παραμετρικές εναλλακτικές όπως MFM, GARCH και αναλογικές μεθόδους — έχει πραγματική ερευνητική αξία, όπως αποτυπώνεται στο Κεφάλαιο~6 και στα ποσοτικά αποτελέσματα του Κεφαλαίου~9. Δεύτερον, ο εκτεταμένος αριθμός σεναρίων που απαιτεί μια τέτοια αντιπαραβολή θέτει αυτομάτως το υπολογιστικό φορτίο στη σφαίρα του κατανεμημένου υπολογισμού· εξ ου και η επιλογή του Spark ως μηχανής εκτέλεσης. Τρίτον, η ερευνητική αξία ενός συστήματος Monte Carlo δεν εξαντλείται στον υπολογιστικό πυρήνα — η αναπαραγωγιμότητα και η πρόσβαση πολλαπλών χρηστών απαιτούν ένα αρθρωμένο σύστημα υπηρεσιών, του οποίου τη σχεδιαστική φιλοσοφία συμμερίζονται οι μελέτες των Moldovan~\citeyear{Moldovan} και του Coleman~\citeyear{Coleman}.
 
-Με αυτή τη βάση, η παρούσα διπλωματική διαφοροποιείται από τις ανωτέρω εργασίες σε τρία σημεία: (α) προσφέρει μια ενοποιημένη και ποσοτική σύγκριση 11 διαφορετικών γεννητριών τροχιών πάνω σε κοινή πλατφόρμα και κοινό πλέγμα παραμέτρων· (β) εκτελεί τη σύγκριση αυτή πάνω σε Spark/Databricks σε εμπορική νέφος-υποδομή, σε αντίθεση με τα πειράματα ad hoc Hadoop ή πολυπύρηνων μηχανημάτων της παλαιότερης βιβλιογραφίας· και (γ) ολοκληρώνει τον υπολογιστικό πυρήνα σε ένα πλήρες σύστημα REST API, ασύγχρονων workers, persistent αποθήκης Parquet και διαδραστικής διεπαφής Streamlit, με τα αντίστοιχα προβλήματα ασφάλειας, διαχείρισης ταυτότητας και αναπαραγωγιμότητας να αντιμετωπίζονται ρητά και τεκμηριωμένα.
+Με αυτή τη βάση, η παρούσα διπλωματική διαφοροποιείται από τις ανωτέρω εργασίες σε τρία σημεία: (α) προσφέρει μια ενοποιημένη και ποσοτική σύγκριση 11 διαφορετικών γεννητριών τροχιών πάνω σε κοινή πλατφόρμα και κοινό πλέγμα παραμέτρων· (β) εκτελεί τη σύγκριση αυτή πάνω σε Spark/Databricks σε υποδομή εμπορικού νέφους, σε αντίθεση με τα πειράματα ad hoc Hadoop ή πολυπύρηνων μηχανημάτων της παλαιότερης βιβλιογραφίας και (γ) ολοκληρώνει τον υπολογιστικό πυρήνα σε ένα κέλυφος web εφαρμογής αντιμετωπίζοντας όμως τα αντίστοιχα προβλήματα ασφάλειας, διαχείρισης ταυτότητας και αναπαραγωγιμότητας, ρητά και τεκμηριωμένα.
 
 \newpage
 
@@ -752,7 +1078,7 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
 \section{Σύγχρονες προσεγγίσεις και εμπειρικές μέθοδοι προσομοίωσης}
 
 \subsection{Επισκόπηση των μεθόδων}
-Στο κεφάλαιο αυτό παρουσιάζονται όλες οι εναλλακτικές μέθοδοι προσομοίωσης που υλοποιούνται στο module \texttt{databricks/src/transforms/simulation.py} και αξιολογούνται εμπειρικά στο Κεφάλαιο~\ref{tab:summary}. Κάθε μέθοδος αντιμετωπίζει με διαφορετικό τρόπο τις δύο αδυναμίες της κίνησης Brown που τεκμηριώθηκαν στο Κεφάλαιο~4: τις παχιές ουρές (leptokurtic returns) και τη συγκέντρωση μεταβλητότητας (volatility clustering). Το πλήρες σύνολο, ταξινομημένο σε δύο ορθογώνιους άξονες (πηγή κατανομής $\times$ ύπαρξη εξάρτησης), συνοψίζεται στον Πίνακα~\ref{tab:methods}.
+Στο κεφάλαιο αυτό παρουσιάζονται όλες οι εναλλακτικές μέθοδοι προσομοίωσης που υλοποιούνται στο module \texttt{databricks/src/transforms/simulation.py} και αξιολογούνται εμπειρικά στον Πίνακα~\ref{tab:summary}. Κάθε μέθοδος αντιμετωπίζει με διαφορετικό τρόπο τις δύο αδυναμίες της κίνησης Brown που τεκμηριώθηκαν στο Κεφάλαιο~4: τις παχιές ουρές (leptokurtic returns) και τη συγκέντρωση μεταβλητότητας (volatility clustering). Το πλήρες σύνολο, ταξινομημένο σε δύο ορθογώνιους άξονες (πηγή κατανομής $\times$ ύπαρξη εξάρτησης), συνοψίζεται στον Πίνακα~\ref{tab:methods}.
 
 \begin{table}[h]
 \centering
@@ -794,7 +1120,7 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
 \]
 Κάθε μονοπάτι αναπαριστά ένα ολόκληρο πραγματικό επεισόδιο της αγοράς, διατηρώντας έτσι όλη την αυτοσυσχέτιση και τη συγκέντρωση μεταβλητότητας του εν λόγω παραθύρου. Το τίμημα είναι \emph{look-back bias}: μόνο $n-T+1$ διαφορετικά παράθυρα είναι διαθέσιμα, οπότε η κατανομή είναι σημαντικά λιγότερο πλούσια από το \texttt{historical}. Οι παραλλαγές \texttt{window\_10d} και \texttt{window\_20d} (\texttt{sim\_window\_10d}, \texttt{sim\_window\_20d}) χρησιμοποιούν σταθερά παράθυρα 10 και 20 ημερών και χρησιμεύουν ως αναφορές για την ευαισθησία της απόδοσης στη μνήμη του παραθύρου.
 
-Το πειραματικό αποτέλεσμα του Κεφαλαίου~\ref{tab:summary} δείχνει ότι η \texttt{window} επιτυγχάνει το χαμηλότερο MAPE στα puts (50\% συνολικά, 28.5\% στα ATM) ακριβώς επειδή ανακυκλώνει επεισόδια με υπαρκτή συγκέντρωση μεταβλητότητας — μηχανισμός που απουσιάζει εντελώς από το BSM.
+Το πειραματικό αποτέλεσμα του Πίνακα~\ref{tab:summary} δείχνει ότι η \texttt{window} επιτυγχάνει το χαμηλότερο MAPE στα puts (50\% συνολικά, 28.5\% στα ATM) ακριβώς επειδή ανακυκλώνει επεισόδια με υπαρκτή συγκέντρωση μεταβλητότητας — μηχανισμός που απουσιάζει εντελώς από το BSM.
 
 \subsection{Παραμετρικές εναλλακτικές: t-Student}
 Ένας απλός τρόπος να αντιμετωπιστούν οι παχιές ουρές χωρίς να εγκαταλειφθεί το παραμετρικό πλαίσιο είναι η αντικατάσταση της κανονικής κατανομής με μία βαρέως-ουριαία οικογένεια. Η μέθοδος \texttt{student\_t} (\texttt{sim\_student\_t}) προσαρμόζει στα ιστορικά log-returns μία \emph{Student-$t$} κατανομή με $\nu$ βαθμούς ελευθερίας μέσω εκτίμησης μέγιστης πιθανοφάνειας, στη συνέχεια δειγματοληπτεί $T \times N$ τυχαίες αποδόσεις από αυτή και αθροίζει ανά μονοπάτι. Η Student-$t$ έχει κύρτωση
@@ -896,14 +1222,14 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
   \qquad
   \bar{S}_T = \frac{1}{N}\sum_{i=1}^{N} S_T^{(i)}.
 \]
-Εξ κατασκευής, $(\tilde{S}_T^{(i)})_{i=1}^{N}$ έχει δειγματικό μέσο ακριβώς $S_0\, e^{rT/252}$, δηλαδή είναι διακριτό martingale. Σημαντικό είναι ότι η διόρθωση \emph{δεν αλλοιώνει} τα ανώτερα ροπά της κατανομής: η κύρτωση, η ασυμμετρία και η εξάρτηση των ουρών διατηρούνται· διορθώνεται μόνο η κλίμακα.
+Εξ κατασκευής, $(\tilde{S}_T^{(i)})_{i=1}^{N}$ έχει δειγματικό μέσο ακριβώς $S_0\, e^{rT/252}$, δηλαδή είναι διακριτό martingale. Σημαντικό είναι ότι η διόρθωση \emph{δεν αλλοιώνει} τις ανώτερες ροπές της κατανομής: η κύρτωση, η ασυμμετρία και η εξάρτηση των ουρών διατηρούνται· διορθώνεται μόνο η κλίμακα.
 
 Στην υλοποίηση, η EMC ενσωματώνεται ως post-processing step στο \texttt{run\_simulations} και ελέγχεται από δύο σύνολα:
 \begin{itemize}
   \item \texttt{EMC\_METHODS} $= \{\,\texttt{fhs\_rn}\,\}$ — οι μέθοδοι που υπόκεινται σε EMC εξ ορισμού.
   \item \texttt{RISK\_NEUTRAL\_METHODS} $= \{\,\texttt{black\_scholes}, \texttt{multifractal}, \texttt{multifractal\_empirical}, \texttt{fhs\_rn}\,\}$ — οι μέθοδοι των οποίων η αναμενόμενη payoff προεξοφλείται με $e^{-rT/252}$.
 \end{itemize}
-Επιπροσθέτως, η παράμετρος \texttt{extra\_emc\_methods} επιτρέπει στον χρήστη να προαιρετικά υπαγάγει στην EMC μεθόδους όπως οι \texttt{historical}, \texttt{window} και \texttt{block\_bootstrap}, για \emph{a priori} σύγκριση πριν και μετά τη διόρθωση. Η μεροληψία που αφαιρείται από αυτές τις μεθόδους ποσοτικοποιείται εμπειρικά στο Σχήμα~\ref{fig:emc_comparison} και αναλύεται διεξοδικά στην ενότητα~\ref{fig:emc_comparison} του Κεφαλαίου~9.
+Επιπροσθέτως, η παράμετρος \texttt{extra\_emc\_methods} επιτρέπει στον χρήστη να  υπαγάγει προαιρετικά στην EMC μεθόδους όπως οι \texttt{historical}, \texttt{window} και \texttt{block\_bootstrap}, για \emph{a priori} σύγκριση πριν και μετά τη διόρθωση. Η μεροληψία που αφαιρείται από αυτές τις μεθόδους ποσοτικοποιείται εμπειρικά στο Σχήμα~\ref{fig:emc_comparison} και αναλύεται διεξοδικά στην ενότητα~\ref{fig:emc_comparison} του Κεφαλαίου~9.
 
 \newpage
 
@@ -946,18 +1272,18 @@ $C - P = S_0\,N(d_1) - K\,e^{-rT}\,N(d_2) - K\,e^{-rT}\,N(-d_2) + S_0\,N(-d_1) =
 Όπου ο όγκος δεδομένων το επιβάλλει — π.χ. στο pipeline \texttt{yfinance} όπου χιλιάδες tickers κατεβαίνουν παράλληλα — χρησιμοποιείται το διανεμημένο μοντέλο εκτέλεσης του Spark μέσω \texttt{mapPartitions} και \emph{Pandas UDFs}, με βοηθούς \texttt{run\_simulations\_spark} και \texttt{run\_multi\_ticker\_spark} στο module \texttt{spark\_simulation\_helpers.py}. Το Spark αναλαμβάνει την κατάτμηση των εργασιών και την ανοχή σε σφάλματα, ενώ ο πυρήνας Monte Carlo παραμένει ο ίδιος, εκτελούμενος ανά partition.
 
 \subsubsection{Λόγοι επιλογής της προσέγγισης}
-Για τις κλίμακες της εμπειρικής μελέτης ($N \leq 10^7$ μονοπάτια ανά τιμολόγηση), η οριζόντια επέκταση μέσω Spark partitions θα εισήγαγε μεγαλύτερο κόστος σειριοποίησης (Python$\leftrightarrow$JVM Arrow buffers, network shuffle, broadcast της παραμετροποίησης) από όσο θα κέρδιζε σε χρόνο εκτέλεσης. Σε αντίθεση, η in-driver διανυσματοποίηση φτάνει διανυσματική ταχύτητα κοντά στο όριο της μνήμης του κόμβου χωρίς καμία επικοινωνία. Η ποσοτική τεκμηρίωση αυτής της επιλογής γίνεται στο κεφάλαιο~\ref{fig:convergence}, όπου ο χρόνος εκτέλεσης ανά εκατομμύριο μονοπατιών μένει ουσιαστικά γραμμικός μέχρι τα $10^7$ μονοπάτια. Το Spark διατηρείται ως \emph{ομπρέλα}: στρώμα ενορχήστρωσης, αποθήκευσης (Delta) και παραλληλισμού όπου χρειάζεται (yfinance, εξαγωγή Parquet).
+Για τις κλίμακες της εμπειρικής μελέτης ($N \leq 10^7$ μονοπάτια ανά τιμολόγηση), η οριζόντια επέκταση μέσω Spark partitions θα εισήγαγε μεγαλύτερο κόστος σειριοποίησης (Python$\leftrightarrow$JVM Arrow buffers, network shuffle, broadcast της παραμετροποίησης) από όσο θα κέρδιζε σε χρόνο εκτέλεσης. Σε αντίθεση, η in-driver διανυσματοποίηση φτάνει διανυσματική ταχύτητα κοντά στο όριο της μνήμης του κόμβου χωρίς καμία επικοινωνία. Η ποσοτική τεκμηρίωση αυτής της επιλογής γίνεται στην ενότητα~\ref{sec:convergence}, όπου ο χρόνος εκτέλεσης ανά εκατομμύριο μονοπατιών μένει ουσιαστικά γραμμικός μέχρι τα $10^7$ μονοπάτια. Το Spark διατηρείται ως \emph{ομπρέλα}: στρώμα ενορχήστρωσης, αποθήκευσης (Delta) και παραλληλισμού όπου χρειάζεται (yfinance, εξαγωγή Parquet).
 
 \subsection{Διαχείριση δεδομένων}
 
 \subsubsection{Λήψη ιστορικών τιμών (yfinance pipeline)}
-Το notebook \texttt{databricks/src/yfinance\_pipeline.ipynb} αναλαμβάνει την περιοδική φόρτωση ιστορικών τιμών μετοχών και δεικτών. Λαμβάνει ως είσοδο μία λίστα tickers, καλεί τη βιβλιοθήκη \texttt{yfinance}, ομαλοποιεί τα δεδομένα σε ενιαίο σχήμα (\texttt{ticker, date, open, high, low, close, adj\_close, volume}) και τα συνενώνει σε ένα Spark DataFrame. Στη συνέχεια καλεί τη ρουτίνα \texttt{merge\_to\_delta} του module \texttt{utils/delta\_helpers.py}, η οποία εκτελεί \emph{idempotent upsert} (\texttt{MERGE INTO}) στον Delta πίνακα \texttt{default.yfinance\_historical\_data}. Παρόμοια ροή τροφοδοτεί τον πίνακα \texttt{default.actual\_option\_prices}, ο οποίος συγκεντρώνει $\approx 700$ ιστορικά αποτιμημένα δικαιώματα προαίρεσης σε δείγμα μετοχών (SPY, AAPL, MSFT, GOOGL, AMZN, META) και χρησιμοποιείται ως \emph{ground truth} στις συγκρίσεις του κεφαλαίου~\ref{tab:summary}.
+Το notebook \texttt{databricks/src/yfinance\_pipeline.ipynb} αναλαμβάνει την περιοδική φόρτωση ιστορικών τιμών μετοχών και δεικτών. Λαμβάνει ως είσοδο μία λίστα tickers, καλεί τη βιβλιοθήκη \texttt{yfinance}, ομαλοποιεί τα δεδομένα σε ενιαίο σχήμα (\texttt{ticker, date, open, high, low, close, adj\_close, volume}) και τα συνενώνει σε ένα Spark DataFrame. Στη συνέχεια καλεί τη ρουτίνα \texttt{merge\_to\_delta} του module \texttt{utils/delta\_helpers.py}, η οποία εκτελεί \emph{idempotent upsert} (\texttt{MERGE INTO}) στον Delta πίνακα \texttt{default.yfinance\_historical\_data}. Παρόμοια ροή τροφοδοτεί τον πίνακα \texttt{default.actual\_option\_prices}, ο οποίος συγκεντρώνει $\approx 700$ ιστορικά αποτιμημένα δικαιώματα προαίρεσης σε δείγμα μετοχών (SPY, AAPL, MSFT, GOOGL, AMZN, META) και χρησιμοποιείται ως \emph{ground truth} στις συγκρίσεις του Πίνακα~\ref{tab:summary}.
 
 \subsubsection{Αποθήκευση σε Delta Tables}
 Η επιλογή του Delta έναντι plain Parquet βασίστηκε στις εγγυήσεις του log-based architecture: ατομικά upserts (αποτρέπουν διπλεγγραφές όταν το pipeline επανεκτελεστεί), \emph{schema enforcement} (αποτρέπει σιωπηλή διαφθορά όταν το ανωφερές API αλλάξει σχήμα), \emph{time travel} (μέσω της εντολής \texttt{VERSION AS OF}) και διαφανής \emph{Z-ordering} σε στήλες όπως το \texttt{ticker} για επιτάχυνση των εξειδικευμένων αναγνώσεων (Damji et al., 2020, κεφ.~9). Σε αντιστάθμισμα δαπανάται ένα μικρό overhead στο transaction log και στις βοηθητικές μετα-στήλες, αμελητέο σε σχέση με τα οφέλη.
 
-\subsubsection{Εξαγωγή παράγωγων datasets σε Parquet}
-Τα παράγωγα datasets των προσομοιώσεων (mc-vs-actual συγκρίσεις, $\lambda$-grid sweeps, block-length sweeps, EMC-comparison πίνακες) εξάγονται σε απλά αρχεία Parquet, χωρίς το Delta layer. Η λογική είναι ότι τα αρχεία αυτά είναι \emph{αποτελέσματα ενός run} και όχι κανονικοί πίνακες· γράφονται μία φορά, διαβάζονται από το API και δεν υπόκεινται σε ενημερώσεις in-place. Η συμπαγής στηλοποιημένη μορφή Parquet διατηρεί καλό βαθμό συμπίεσης και μέγιστη ταχύτητα ανάγνωσης μέσω predicate pushdown και column pruning (Damji et al., 2020, κεφ.~4).
+\subsubsection{Εξαγωγή παραγόμενων datasets σε Parquet}
+Τα παραγώμενα datasets των προσομοιώσεων (mc-vs-actual συγκρίσεις, $\lambda$-grid sweeps, block-length sweeps, EMC-comparison πίνακες) εξάγονται σε απλά αρχεία Parquet, χωρίς το Delta layer. Η λογική είναι ότι τα αρχεία αυτά είναι \emph{αποτελέσματα ενός run} και όχι κανονικοί πίνακες· γράφονται μία φορά, διαβάζονται από το API και δεν υπόκεινται σε ενημερώσεις in-place. Η συμπαγής στηλοποιημένη μορφή Parquet διατηρεί καλό βαθμό συμπίεσης και μέγιστη ταχύτητα ανάγνωσης μέσω predicate pushdown και column pruning (Damji et al., 2020, κεφ.~4).
 
 \subsection{Διάταξη αρχείων στο ADLS Gen2}
 Όλα τα παράγωγα Parquet αποθηκεύονται σε ένα Azure Data Lake Storage Gen2 container, με ομοιόμορφη ιεραρχική διάταξη:
@@ -970,7 +1296,7 @@ abfss://<container>@<account>.dfs.core.windows.net/
 Η πρόσβαση στο storage γίνεται με ABFSS και authentication μέσω OAuth2 service principal (Azure AD), με τα μυστικά αποθηκευμένα στο \emph{Databricks Secret Scope}. Στο runtime του API, η ίδια πρόσβαση γίνεται είτε με storage account key είτε με passthrough credential, με βάση τις μεταβλητές περιβάλλοντος που τεκμηριώνονται στο αρχείο \texttt{DEPLOY.md} του αποθετηρίου.
 
 \subsection{Επιδόσεις και κλιμακωσιμότητα}
-Οι μετρήσεις του κεφαλαίου~\ref{fig:convergence} επιβεβαιώνουν ότι ο πυρήνας Monte Carlo κλιμακώνει σχεδόν γραμμικά μέχρι τα $10^7$ μονοπάτια, με χρόνο εκτέλεσης $\approx 25\,$s για την υψηλότερη βαθμίδα στον κόμβο \texttt{Standard\_D8ds\_v4} (8 vCPU, 32~GB μνήμης). Η μέγιστη παρατηρηθείσα μνήμη ανά εκτέλεση είναι $\approx 800$~MB για τα \texttt{fhs}/\texttt{fhs\_rn} datasets και $\approx 1.6$~GB για το \texttt{analogue}, και τα δύο εντός του ορίου του κόμβου. Η σύγκλιση των τιμολογήσεων είναι $< 0.05\%$ μεταξύ των κλιμάκων $5\cdot 10^6$ και $10^7$ μονοπατιών, υποδεικνύοντας ότι η παραγωγική ρύθμιση $N = 2\cdot 10^6$ που χρησιμοποιήθηκε στις εμπειρικές αναλύσεις της εργασίας προσφέρει ικανοποιητικό συμβιβασμό μεταξύ ακρίβειας και κόστους εκτέλεσης. Δεν παρατηρήθηκε ανάγκη για \emph{horizontal scaling} ή \emph{repartitioning} σε καμία από τις πειραματικές διαμορφώσεις.
+Οι μετρήσεις της ενότητας~\ref{sec:convergence} επιβεβαιώνουν ότι ο πυρήνας Monte Carlo κλιμακώνει σχεδόν γραμμικά μέχρι τα $10^7$ μονοπάτια, με χρόνο εκτέλεσης $\approx 25\,$s για την υψηλότερη βαθμίδα στον κόμβο \texttt{Standard\_D8ds\_v4} (8 vCPU, 32~GB μνήμης). Η μέγιστη παρατηρηθείσα μνήμη ανά εκτέλεση είναι $\approx 800$~MB για τα \texttt{fhs}/\texttt{fhs\_rn} datasets και $\approx 1.6$~GB για το \texttt{analogue}, και τα δύο εντός του ορίου του κόμβου. Η σύγκλιση των τιμολογήσεων είναι $< 0.05\%$ μεταξύ των κλιμάκων $5\cdot 10^6$ και $10^7$ μονοπατιών, υποδεικνύοντας ότι η παραγωγική ρύθμιση $N = 2\cdot 10^6$ που χρησιμοποιήθηκε στις εμπειρικές αναλύσεις της εργασίας προσφέρει ικανοποιητικό συμβιβασμό μεταξύ ακρίβειας και κόστους εκτέλεσης. Δεν παρατηρήθηκε ανάγκη για \emph{horizontal scaling} ή \emph{repartitioning} σε καμία από τις πειραματικές διαμορφώσεις.
 
 \newpage
 
@@ -991,7 +1317,64 @@ abfss://<container>@<account>.dfs.core.windows.net/
 
 Η ροή υψηλού επιπέδου είναι: ο χρήστης συνδέεται στο UI, ζητά JWT μέσω του API, υποβάλει εργασία, ο worker ανιχνεύει την ουρά, την υποβάλει στο Databricks Jobs API, ενημερώνει την κατάσταση και — όταν ολοκληρωθεί — η UI ανακτά τα αποτελέσματα από το parquet export που έχει γραφτεί στο ADLS.
 
-\noindent\textbf{[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — μη διαθέσιμη στο repository]:} Διάγραμμα αρχιτεκτονικής συστήματος (block diagram) που να αποτυπώνει τα τρία επίπεδα και τις εξωτερικές υπηρεσίες: Streamlit UI, FastAPI API, Worker, σχεσιακή βάση (SQLite/SQLModel), Azure Data Lake Storage Gen2 και Databricks Jobs. Προτείνεται δημιουργία σε draw.io, Mermaid (flowchart LR) ή Lucidchart.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    font=\small,
+    node distance=6mm and 10mm,
+    box/.style={draw, rounded corners=2pt, align=center, minimum height=8mm, inner sep=4pt, fill=white},
+    presentation/.style={box, fill=blue!8},
+    edge/.style={box, fill=orange!15},
+    app/.style={box, fill=green!10},
+    worker/.style={box, fill=yellow!18},
+    data/.style={box, fill=gray!12},
+    cloud/.style={box, fill=purple!10},
+    flow/.style={-Stealth, thick},
+    config/.style={-Stealth, dashed, gray},
+    grouplbl/.style={font=\footnotesize\itshape, gray!70!black}
+  ]
+
+  % --- presentation layer ---
+  \node[presentation] (user)   {Χρήστης};
+  \node[presentation, right=of user] (ui) {Streamlit UI\\\scriptsize\texttt{ui/}};
+  \node[presentation, right=of ui]  (client) {\texttt{api\_client.py}\\\scriptsize JWT + HTTP};
+
+  % --- edge ---
+  \node[edge, below=12mm of ui] (nginx) {nginx\\\scriptsize rate-limit + headers};
+
+  % --- application layer ---
+  \node[app, below=12mm of nginx] (api) {FastAPI \texttt{app/main.py}\\\scriptsize middleware + routers\\\scriptsize \texttt{/auth /jobs /results /datasets}};
+
+  \node[data, left=18mm of api] (db) {Σχεσιακή ΒΔ\\\scriptsize SQLModel · Alembic\\\scriptsize \texttt{Job} table};
+
+  \node[worker, right=18mm of api] (worker) {Worker\\\scriptsize \texttt{worker/worker.py}\\\scriptsize poll QUEUED};
+
+  % --- runners / results strategies ---
+  \node[app, below=10mm of worker] (runner) {\texttt{runners/factory}\\\scriptsize DatabricksRunner};
+  \node[app, below=10mm of api]    (resrepo) {\texttt{results/factory}\\\scriptsize AzureParquetRepo};
+
+  % --- cloud layer ---
+  \node[cloud, below=12mm of runner] (dbx) {Databricks Job\\\scriptsize Monte Carlo notebook};
+  \node[cloud, below=12mm of resrepo] (adls) {ADLS Gen2\\\scriptsize \texttt{abfss://}\,Parquet};
+
+  % --- flows ---
+  \draw[flow] (user)   -- (ui);
+  \draw[flow] (ui)     -- (client);
+  \draw[flow] (client) |- (nginx);
+  \draw[flow] (nginx)  -- (api);
+  \draw[flow] (api)    -- (db);
+  \draw[flow] (api)    -- (worker);
+  \draw[flow] (worker) -- (db);
+  \draw[flow] (worker) -- (runner);
+  \draw[flow] (runner) -- node[right, font=\scriptsize]{REST 2.0} (dbx);
+  \draw[flow] (dbx)    -- node[below, font=\scriptsize, sloped]{writes Parquet} (adls);
+  \draw[flow] (api)    -- (resrepo);
+  \draw[flow] (resrepo) -- node[left, font=\scriptsize]{read Parquet} (adls);
+
+\end{tikzpicture}
+\caption{Διάγραμμα αρχιτεκτονικής της εφαρμογής. Τα τρία επίπεδα (παρουσίαση, εφαρμογή, δεδομένα) διαχωρίζονται από το strategy layer των runners και των results repositories, που αποσυνδέει τη FastAPI υπηρεσία από τη συγκεκριμένη υλοποίηση Databricks/ADLS. Συνεχόμενες ακμές: ροή δεδομένων· διακεκομμένες: ροή ρυθμίσεων.}
+\label{fig:architecture}
+\end{figure}
 
 \subsection{REST API (FastAPI)}
 Το API είναι υλοποιημένο σε FastAPI και ακολουθεί τις αρχές του OpenAPI: όλα τα endpoints τεκμηριώνονται αυτόματα και είναι διαθέσιμα μέσω της σελίδας \texttt{/docs}. Οι ομάδες endpoints είναι:
@@ -1004,7 +1387,12 @@ abfss://<container>@<account>.dfs.core.windows.net/
 \end{itemize}
 Η πλήρης λίστα endpoints, με μέθοδο, μονοπάτι, ρόλο που απαιτείται και τύπο απόκρισης, παρατίθεται στο Παράρτημα Γ.
 
-\noindent\textbf{[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — μη διαθέσιμη στο repository]:} Διάγραμμα ακολουθίας (sequence diagram) που να καλύπτει τον πλήρη κύκλο μιας εργασίας — \texttt{UI} $\to$ \texttt{API} (POST /jobs) $\to$ \texttt{DB} (Job=QUEUED) $\to$ \texttt{Worker} (poll) $\to$ \texttt{Databricks Jobs API} $\to$ \texttt{ADLS} (parquet) $\to$ \texttt{API} (GET /results) $\to$ \texttt{UI}. Προτείνεται PlantUML ή Mermaid (\texttt{sequenceDiagram}).
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{Sequence_Diagram}
+\caption{Διάγραμμα ακολουθίας (sequence diagram) που καλύπτει τον πλήρη κύκλο μιας εργασίας: \texttt{UI} $\to$ \texttt{API} (POST /jobs) $\to$ \texttt{DB} (Job=QUEUED) $\to$ \texttt{Worker} (poll) $\to$ \texttt{Databricks Jobs API} $\to$ \texttt{ADLS} (parquet) $\to$ \texttt{API} (GET /results) $\to$ \texttt{UI}.}
+\label{fig:sequence_diagram}
+\end{figure}
 
 \subsection{Αυθεντικοποίηση και έλεγχος πρόσβασης}
 Η αυθεντικοποίηση γίνεται μέσω JSON Web Tokens. Οι κωδικοί αποθηκεύονται με \texttt{bcrypt} (μέσω \texttt{passlib}) ενώ η ψηφιακή υπογραφή του token γίνεται με προκαθορισμένο αλγόριθμο και μυστικό κλειδί που τεκμαίρεται από το περιβάλλον. Η εξουσιοδότηση βασίζεται σε ρόλους (Role-Based Access Control):
@@ -1016,7 +1404,7 @@ abfss://<container>@<account>.dfs.core.windows.net/
 Ένας demo χρήστης παράγεται αυτόματα στην εκκίνηση του API από τις μεταβλητές \texttt{DEMO\_USER\_*}, ώστε το demo να είναι λειτουργικό από το πρώτο boot.
 
 \subsection{Middleware ασφαλείας και παρατηρησιμότητας}
-Στο pipeline του ASGI εφαρμογή έχουν προστεθεί τα εξής middleware, υπό τη λογική \emph{defence in depth}:
+Στο pipeline του API έχουν προστεθεί τα εξής middleware, υπό τη λογική \emph{defence in depth}:
 \begin{itemize}
   \item \textbf{Request correlation}: εισάγει/προωθεί κεφαλίδα \texttt{X-Request-ID} για ιχνηλάτηση μεταξύ logs.
   \item \textbf{Security headers}: προσθέτει βασικές κεφαλίδες σκλήρυνσης (HSTS, content-type-options, frame-options κ.λπ.).
@@ -1026,17 +1414,17 @@ abfss://<container>@<account>.dfs.core.windows.net/
   \item \textbf{Structured logging}: JSON logger που εκπέμπει το \texttt{X-Request-ID} ώστε τα logs να είναι correlatable σε όλη τη ροή.
 \end{itemize}
 
-\subsection{Επιμονή και μοντέλο δεδομένων}
-Η βάση δεδομένων υλοποιείται μέσω SQLModel/SQLAlchemy, με προεπιλεγμένη μηχανή SQLite και δυνατότητα παραμετροποίησης μέσω της μεταβλητής \texttt{DATABASE\_URL}. Οι κύριες οντότητες είναι:
+\subsection{Αποθήκευση και μοντέλο δεδομένων}
+Η βάση δεδομένων της εφαρμογής υλοποιείται μέσω SQLModel/SQLAlchemy, με προεπιλεγμένη μηχανή SQLite και δυνατότητα παραμετροποίησης μέσω της μεταβλητής \texttt{DATABASE\_URL}. Οι κύριες οντότητες είναι:
 \begin{itemize}
   \item \texttt{Job}: κατάσταση, παράμετροι (JSON), runner, εξωτερικό \texttt{run\_id}, χρονικές σφραγίδες, \texttt{output\_ref} και τυχόν μήνυμα σφάλματος.
   \item \texttt{ResultRow}: γραμμές μετρικών ανά εργασία και ανά ημερομηνία.
   \item \texttt{JobEvent}: ίχνος γεγονότων (audit trail) για κάθε εργασία.
   \item \texttt{JobMetrics}: διάρκεια εκτέλεσης, πλήθος γραμμών, runner, τελική κατάσταση.
 \end{itemize}
-Η διαχείριση του σχήματος γίνεται μέσω Alembic migrations. Παρέχεται ξεχωριστή ρουτίνα \texttt{init\_db\_and\_seed} για την αρχικοποίηση και σπορά demo χρήστη στην ανάπτυξη. Οι λεπτομέρειες των πεδίων κάθε πίνακα παρατίθενται στο Παράρτημα Ε.
+Η διαχείριση του σχήματος γίνεται μέσω Alembic migrations. Παρέχεται ξεχωριστή ρουτίνα \texttt{init\_db\_and\_seed} για την αρχικοποίηση και seed demo user στην ανάπτυξη. Οι λεπτομέρειες των πεδίων κάθε πίνακα παρατίθενται στο Παράρτημα Ε.
 
-\noindent\textbf{[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — μη διαθέσιμη στο repository]:} Διάγραμμα οντοτήτων-σχέσεων (ER diagram) των τεσσάρων πινάκων \texttt{Job}, \texttt{ResultRow}, \texttt{JobEvent}, \texttt{JobMetrics}, με όλες τις σχέσεις \texttt{1:N} ως προς το \texttt{Job.id}. Προτείνεται dbdiagram.io, Mermaid (\texttt{erDiagram}) ή SchemaSpy.
+
 
 \subsection{Worker και κύκλος ζωής εργασίας}
 Ο worker είναι ένας διαρκής βρόχος ανίχνευσης (polling loop) με σταθερό βήμα, ο οποίος:
@@ -1047,7 +1435,7 @@ abfss://<container>@<account>.dfs.core.windows.net/
 \end{enumerate}
 Η μηχανή καταστάσεων είναι: \texttt{QUEUED} $\to$ \texttt{RUNNING} $\to$ \texttt{SUCCEEDED} $\mid$ \texttt{FAILED}, με ενδιάμεσες καταγραφές στον πίνακα \texttt{JobEvent}.
 
-\noindent\textbf{[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — μη διαθέσιμη στο repository]:} Διάγραμμα καταστάσεων (state machine) για τον κύκλο ζωής της εργασίας με τις τέσσερις καταστάσεις και τις επιτρεπτές μεταβάσεις, καθώς και τα γεγονότα που ενεργοποιούν κάθε μετάβαση (submit, runner status poll, success, failure). Προτείνεται Mermaid (\texttt{stateDiagram-v2}) ή PlantUML.
+
 
 \subsection{Αφαιρέσεις Runners}
 Η ενορχήστρωση είναι αποσυνδεδεμένη από τη συγκεκριμένη πλατφόρμα εκτέλεσης μέσω μιας αφαιρετικής κλάσης \texttt{BaseRunner}. Έχουν υλοποιηθεί:
@@ -1058,7 +1446,7 @@ abfss://<container>@<account>.dfs.core.windows.net/
 \end{itemize}
 Με αυτή τη διάταξη, η αντικατάσταση του Databricks από άλλη πλατφόρμα εκτέλεσης απαιτεί μόνο νέα υλοποίηση \texttt{BaseRunner} και ενημέρωση του \texttt{factory}.
 
-\noindent\textbf{[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — μη διαθέσιμη στο repository]:} Διάγραμμα κλάσεων (class diagram) που να δείχνει την αφαιρετική κλάση \texttt{BaseRunner} με τις αφηρημένες μεθόδους \texttt{submit()}/\texttt{get\_status()} και τις τρεις συγκεκριμένες υλοποιήσεις (\texttt{DatabricksRunner}, \texttt{LocalRunner}, \texttt{AirflowRunner}), καθώς και τη σχέση με το \texttt{RunnerFactory}. Προτείνεται PlantUML ή Mermaid (\texttt{classDiagram}).
+
 
 \subsection{Αποθήκευση αποτελεσμάτων}
 Τα αποτελέσματα ενός trial παράγονται από το Databricks notebook ως parquet snapshot στο ADLS Gen2. Η ανάγνωσή τους γίνεται μέσω μιας αφαιρετικής κλάσης \texttt{ResultsRepository}, με δύο υλοποιήσεις:
@@ -1066,7 +1454,7 @@ abfss://<container>@<account>.dfs.core.windows.net/
   \item \texttt{LocalParquetResultsRepository}: για τοπική ανάπτυξη.
   \item \texttt{AzureParquetResultsRepository}: διαβάζει το ticker-partitioned parquet export μέσω \texttt{adlfs}/\texttt{pyarrow} και επιστρέφει τις γραμμές που ταιριάζουν στον συνδυασμό \texttt{(ticker, K, T, Runs)} της αιτούσας εργασίας.
 \end{itemize}
-Το μονοπάτι κατασκευάζεται με τη μορφή \texttt{abfss://<container>@<account>.dfs.core.windows.net/<prefix>/<dataset>/[ticker=<TICKER>]/} και είναι κοινό μεταξύ API και Databricks.
+Το μονοπάτι κατασκευάζεται με τη μορφή \texttt{abfss://\allowbreak<container>\allowbreak @\allowbreak<account>\allowbreak.dfs\allowbreak.core\allowbreak.windows\allowbreak.net/\allowbreak<prefix>/\allowbreak<dataset>/\allowbreak[ticker=<TICKER>]/} και είναι κοινό μεταξύ API και Databricks.
 
 \subsection{Σύνολα δεδομένων ανάλυσης (datasets registry)}
 Παράλληλα με τις per-job προσομοιώσεις, η εφαρμογή εκθέτει και τα προ-υπολογισμένα analytical datasets που τροφοδοτούν τη σελίδα Ανάλυσης. Τα κύρια είναι:
@@ -1081,7 +1469,7 @@ abfss://<container>@<account>.dfs.core.windows.net/
 \subsection{Διεπαφή χρήστη (Streamlit)}
 Η διεπαφή υλοποιείται σε Streamlit ως πολυσέλιδη εφαρμογή. Ο πελάτης HTTP (\texttt{ui/api\_client.py}) αναλαμβάνει την επικοινωνία με το API, τη διαχείριση του JWT στο session state και τη φιλική αναφορά σφαλμάτων.
 
-\noindent\textbf{[ΕΙΚΟΝΕΣ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — μη διαθέσιμες στο repository]:} Στιγμιότυπα οθόνης (screenshots) από τις βασικές σελίδες της εφαρμογής Streamlit — Είσοδος, Υποβολή εργασίας, Παρακολούθηση εργασιών, Αποτελέσματα εργασίας, Σύγκριση εκτελέσεων, Ανάλυση, About, Διαχείριση. Λαμβάνονται με εκτέλεση \texttt{streamlit run ui/streamlit\_app.py} και αποθήκευση \texttt{.png} στον φάκελο \texttt{thesis/figures/ui/}.
+
 
 \subsubsection{Σελίδα εισόδου}
 Αυθεντικοποίηση μέσω \texttt{/auth/token} και αποθήκευση του token στο session state.
@@ -1113,7 +1501,6 @@ abfss://<container>@<account>.dfs.core.windows.net/
 \subsection{Συσκευοποίηση και ανάπτυξη}
 Η εφαρμογή πακετάρεται σε μία πολυσταδιακή εικόνα Docker βασισμένη σε Python 3.13-slim, με χρήση \texttt{uv} για ντετερμινιστική εγκατάσταση εξαρτήσεων και εκτέλεση ως μη προνομιούχος χρήστης (uid 1001). Οι τρεις διεργασίες ορίζονται ως services στο \texttt{docker-compose.yml} και διαφέρουν μόνο στην εντολή εκκίνησης. Για το production demo το ίδιο image αναπτύσσεται στο Azure Container Apps, με τρεις Container Apps στο ίδιο Environment (\texttt{api}, \texttt{worker}, \texttt{ui}), μυστικά στο εγγενές secret store της ACA και HTTPS endpoint για την UI. Οι εντολές αναφοράς παρατίθενται στο Παράρτημα ΣΤ.
 
-\noindent\textbf{[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — μη διαθέσιμη στο repository]:} Διάγραμμα ανάπτυξης (deployment diagram) σε δύο όψεις: (α) τοπικό \texttt{docker-compose} με τα τρία services (\texttt{api}, \texttt{worker}, \texttt{ui}), τον κοινό named volume \texttt{appdata} και τις εκτεθειμένες θύρες· (β) production τοπολογία Azure Container Apps με το Container App Environment, τα τρία Container Apps, το ACR, το ADLS Gen2 account και το Databricks workspace ως εξωτερικές υπηρεσίες. Προτείνεται draw.io με σύνολο εικονιδίων Azure ή Mermaid (\texttt{flowchart}).
 
 
 \newpage
@@ -1124,17 +1511,17 @@ abfss://<container>@<account>.dfs.core.windows.net/
 \section{Υλοποίηση, Προσομοιώσεις και Αποτελέσματα}
 \subsection{Πειραματικό περιβάλλον}
 
-Όλα τα πειράματα που παρουσιάζονται στις επόμενες ενότητες εκτελέστηκαν στο περιβάλλον του Databricks Workspace, σε job cluster ενός κόμβου τύπου \texttt{Standard\_D8ds\_v4} της Microsoft Azure (8 vCPU της οικογένειας Intel Xeon Platinum, 32~GB μνήμης και $300$~GB τοπικού SSD). Επιλέχθηκε η εκτέλεση σε έναν μόνο κόμβο διότι ο υπολογιστικός πυρήνας είναι πλήρως διανυσματοποιημένος σε NumPy και αξιοποιεί τις χιλιάδες πυρήνες της βιβλιοθήκης BLAS, οπότε για τις κλίμακες που εξετάζονται ($N \leq 10^7$ μονοπάτια) η οριζόντια επέκταση μέσω Spark partitions θα εισήγαγε μεγαλύτερο κόστος σειριοποίησης από όσο θα κέρδιζε σε χρόνο εκτέλεσης· η τεκμηρίωση της επιλογής γίνεται ποσοτικά στην ενότητα~\ref{fig:convergence}. Ο runtime είναι Databricks Runtime $15$.$x$ LTS με προεγκατεστημένο Spark $3$.$x$ και Python $3$.$11$, ενώ οι εξαρτήσεις της εφαρμογής (\texttt{numpy}, \texttt{pandas}, \texttt{scipy}, \texttt{arch}, \texttt{scikit-learn}, \texttt{matplotlib}) είναι καρφιτσωμένες στο \texttt{pyproject.toml} του έργου.
+Όλα τα πειράματα που παρουσιάζονται στις επόμενες ενότητες εκτελέστηκαν στο περιβάλλον του Databricks Workspace, σε job cluster ενός κόμβου τύπου \texttt{Standard\_D8ds\_v4} της Microsoft Azure (8 vCPU της οικογένειας Intel Xeon Platinum, 32~GB μνήμης και $300$~GB τοπικού SSD). Επιλέχθηκε η εκτέλεση σε έναν μόνο κόμβο διότι ο υπολογιστικός πυρήνας είναι πλήρως διανυσματοποιημένος σε NumPy και αξιοποιεί τις χιλιάδες πυρήνες της βιβλιοθήκης BLAS, οπότε για τις κλίμακες που εξετάζονται ($N \leq 10^7$ μονοπάτια) η οριζόντια επέκταση μέσω Spark partitions θα εισήγαγε μεγαλύτερο κόστος σειριοποίησης από όσο θα κέρδιζε σε χρόνο εκτέλεσης· η τεκμηρίωση της επιλογής γίνεται ποσοτικά στην ενότητα~\ref{sec:convergence}. Το runtime είναι Databricks Runtime $15$.$x$ LTS με προεγκατεστημένο Spark $3$.$x$ και Python $3$.$11$, ενώ οι εξαρτήσεις της εφαρμογής (\texttt{numpy}, \texttt{pandas}, \texttt{scipy}, \texttt{arch}, \texttt{scikit-learn}, \texttt{matplotlib}) είναι καρφιτσωμένες στο \texttt{pyproject.toml} του έργου.
 
-Δύο σύνολα δεδομένων τροφοδοτούν τις προσομοιώσεις. Πρώτο, ο πίνακας Delta \texttt{default.yfinance\_historical\_data} με περίπου $105\,000$ ημερήσιες παρατηρήσεις OHLCV και προ-υπολογισμένες λογαριθμικές αποδόσεις για έντεκα δείκτες και μετοχές αναφοράς (S\&P~500 \texttt{\^{}GSPC} από το 1927, ETF \texttt{SPY}, υψηλής κεφαλαιοποίησης τίτλοι \texttt{AAPL}, \texttt{MSFT}, \texttt{GOOGL}, \texttt{AMZN}, \texttt{META}, ενεργειακοί και χρηματοοικονομικοί τίτλοι, καθώς και ο τίτλος επιτοκίου \texttt{\^{}IRX} για το ακίνδυνο επιτόκιο). Δεύτερο, ο πίνακας Delta \texttt{default.actual\_option\_prices}, που περιλαμβάνει περί τις επτακόσιες \emph{ζωντανές} τιμές αγοράς δικαιωμάτων προαίρεσης πάνω στα έξι υψηλής εμπορευσιμότητας υποκείμενα (\texttt{SPY}, \texttt{AAPL}, \texttt{MSFT}, \texttt{GOOGL}, \texttt{AMZN}, \texttt{META}) και χρησιμοποιείται ως αναφορά ακρίβειας στα υποκεφάλαια~\ref{fig:mc_vs_actual}--\ref{fig:lam_sweep}. Η ενημέρωση και των δύο πινάκων γίνεται μέσω των notebooks \texttt{yfinance\_data\_pipeline} και \texttt{options\_data\_pipeline} του φακέλου \texttt{databricks/jobs/}. Τα ενδιάμεσα αποτελέσματα των προσομοιώσεων αποθηκεύονται στον πίνακα \texttt{default.simulation\_results} με διαμέριση ανά \texttt{ticker} και επιπλέον εξάγονται σε Parquet στο ADLS Gen2 για κατανάλωση από την εφαρμογή του Κεφαλαίου~8.
+Δύο σύνολα δεδομένων τροφοδοτούν τις προσομοιώσεις. Πρώτο, ο πίνακας Delta \texttt{default.yfinance\_historical\_data} με περίπου $105000$ ημερήσιες παρατηρήσεις OHLCV και προ-υπολογισμένες λογαριθμικές αποδόσεις για έντεκα δείκτες και μετοχές αναφοράς (S\&P~500 \texttt{\^{}GSPC} από το 1927, ETF \texttt{SPY}, υψηλής κεφαλαιοποίησης τίτλοι \texttt{AAPL}, \texttt{MSFT}, \texttt{GOOGL}, \texttt{AMZN}, \texttt{META}, ενεργειακοί και χρηματοοικονομικοί τίτλοι, καθώς και ο τίτλος επιτοκίου \texttt{\^{}IRX} για το ακίνδυνο επιτόκιο). Δεύτερο, ο πίνακας Delta \texttt{default.actual\_option\_prices}, που περιλαμβάνει περί τις επτακόσιες \emph{ζωντανές} τιμές αγοράς δικαιωμάτων προαίρεσης πάνω στα έξι υψηλής εμπορευσιμότητας υποκείμενα (\texttt{SPY}, \texttt{AAPL}, \texttt{MSFT}, \texttt{GOOGL}, \texttt{AMZN}, \texttt{META}) και χρησιμοποιείται ως αναφορά ακρίβειας στα υποκεφάλαια~\ref{fig:mc_vs_actual}--\ref{fig:lam_sweep}. Η ενημέρωση και των δύο πινάκων γίνεται μέσω των notebooks \texttt{yfinance\_data\_pipeline} και \texttt{options\_data\_pipeline} του φακέλου \texttt{databricks/jobs/}. Τα ενδιάμεσα αποτελέσματα των προσομοιώσεων αποθηκεύονται στον πίνακα \texttt{default.simulation\_results} με διαμέριση ανά \texttt{ticker} και επιπλέον εξάγονται σε Parquet στο ADLS Gen2 για κατανάλωση από την εφαρμογή του Κεφαλαίου~8.
 
-Σε ό,τι αφορά τις παραμέτρους μοντελοποίησης, η μεταβλητότητα εξάγεται από τη δειγματική απόκλιση των ημερησίων λογαριθμικών αποδόσεων και ετησιοποιείται με τη συνηθισμένη υπόθεση $\sqrt{252}$ ημερών διαπραγμάτευσης ανά έτος. Το ακίνδυνο επιτόκιο $r$ ανακτάται δυναμικά από την τελευταία διαθέσιμη τιμή του δείκτη \texttt{\^{}IRX} (απόδοση εντόκου γραμματίου διάρκειας $13$ εβδομάδων του Αμερικανικού Δημοσίου), με fallback στο $4{,}5\%$ όταν η τρέχουσα τιμή δεν είναι διαθέσιμη. Ο ορίζοντας τιμολόγησης τυποποιείται στις $T = 10$ ημέρες διαπραγμάτευσης, μέγεθος που αποτυπώνει τη συνηθισμένη διάρκεια βραχυπρόθεσμων στρατηγικών hedging χωρίς να εισάγει τη μεροληψία διπλασιασμού του παραθύρου ιστορικών δεδομένων που θα παρατηρούνταν σε μεγαλύτερους ορίζοντες. Ο αριθμός μονοπατιών για τις συγκριτικές αναλύσεις των επόμενων υποκεφαλαίων είναι $N = 2 \cdot 10^6$, επιλογή που τεκμηριώνεται στην ενότητα~\ref{fig:convergence}, ενώ η μελέτη ευστάθειας του υπολογιστικού πυρήνα στις κλίμακες \texttt{RUN\_SCALES = [1\,000, 10\,000, 100\,000, 500\,000, 1\,000\,000, 2\,000\,000, 5\,000\,000, 10\,000\,000]} επιτρέπει την επικύρωση της επιλογής. Για τις σαρώσεις μηχανισμού (μήκος block στην ενότητα~\ref{fig:block_length_sweep} και ενδοδιαλειπτικότητα $\lambda$ στην ενότητα~\ref{fig:lam_sweep}) χρησιμοποιείται ο δείκτης \texttt{\^{}GSPC}, ως ο σύμβολο με τη μεγαλύτερη διαθέσιμη ιστορία και τις πιο σταθερές στατιστικές ιδιότητες.
+Σε ό,τι αφορά τις παραμέτρους μοντελοποίησης, η μεταβλητότητα εξάγεται από τη δειγματική απόκλιση των ημερησίων λογαριθμικών αποδόσεων και ετησιοποιείται με τη συνηθισμένη υπόθεση $\sqrt{252}$ ημερών διαπραγμάτευσης ανά έτος. Το ακίνδυνο επιτόκιο $r$ ανακτάται δυναμικά από την τελευταία διαθέσιμη τιμή του δείκτη \texttt{\^{}IRX} (απόδοση εντόκου γραμματίου διάρκειας $13$ εβδομάδων του Αμερικανικού Δημοσίου), με fallback στο $4{,}5\%$ όταν η τρέχουσα τιμή δεν είναι διαθέσιμη. Ο ορίζοντας τιμολόγησης τυποποιείται στις $T = 10$ ημέρες διαπραγμάτευσης, μέγεθος που αποτυπώνει τη συνηθισμένη διάρκεια βραχυπρόθεσμων στρατηγικών hedging χωρίς να εισάγει τη μεροληψία διπλασιασμού του παραθύρου ιστορικών δεδομένων που θα παρατηρούνταν σε μεγαλύτερους ορίζοντες. Ο αριθμός μονοπατιών για τις συγκριτικές αναλύσεις των επόμενων υποκεφαλαίων είναι $N = 2 \cdot 10^6$, επιλογή που τεκμηριώνεται στην ενότητα~\ref{sec:convergence}, ενώ η μελέτη ευστάθειας του υπολογιστικού πυρήνα στις κλίμακες \texttt{RUN\_SCALES = [1\,000, 10\,000, 100\,000, 500\,000, 1\,000\,000, 2\,000\,000, 5\,000\,000, 10\,000\,000]} επιτρέπει την επικύρωση της επιλογής. Για τις σαρώσεις μηχανισμού (μήκος block στην ενότητα~\ref{fig:block_length_sweep} και ενδοδιαλειπτικότητα $\lambda$ στην ενότητα~\ref{fig:lam_sweep}) χρησιμοποιείται ο δείκτης \texttt{\^{}GSPC}, ως το σύμβολο με τη μεγαλύτερη διαθέσιμη ιστορία και τις πιο σταθερές στατιστικές ιδιότητες.
 
 \subsection{Σύγκριση μεθόδων προσομοίωσης έναντι πραγματικών τιμών}
 
 Στην κεντρική σύγκριση που παρουσιάζεται στο παρόν υποκεφάλαιο, καθεμία από τις δώδεκα μεθόδους προσομοίωσης που παρουσιάστηκαν στο Κεφάλαιο~6 αξιολογείται έναντι ζωντανών τιμών αγοράς. Το σύνολο αναφοράς προέρχεται από τον πίνακα \texttt{default.actual\_option\_prices}, ο οποίος συγκεντρώνει περίπου επτακόσιες παρατηρήσεις τιμολόγησης δικαιωμάτων προαίρεσης πάνω σε έξι υψηλής εμπορευσιμότητας υποκείμενα: \texttt{SPY}, \texttt{AAPL}, \texttt{MSFT}, \texttt{GOOGL}, \texttt{AMZN} και \texttt{META}. Για κάθε ζεύγος (μέθοδος, τύπος δικαιώματος) υπολογίζεται το \emph{Mean Absolute Percentage Error} (MAPE) μεταξύ της προσομοιωμένης τιμής εκτίμησης και της μέσης τιμής αγοράς (mid-price), ενώ ο αριθμός μονοπατιών έχει ρυθμιστεί στις δύο εκατομμύρια διαδρομές ανά ζεύγος, ποσότητα στην οποία το σφάλμα Monte Carlo είναι ήδη σαφώς μικρότερο από το συστηματικό σφάλμα μοντελοποίησης (βλέπε ενότητα~\ref{fig:mc_vs_actual_atm} και υποκεφάλαιο σύγκλισης).
 
-Η Εικόνα~\ref{fig:mc_vs_actual} συνοψίζει τα αποτελέσματα. Δύο είναι οι κύριες παρατηρήσεις. \emph{Πρώτον}, για τα δικαιώματα αγοράς (calls) η μέθοδος \texttt{black\_scholes} επιτυγχάνει το χαμηλότερο σφάλμα, ίσο με $46{,}4\%$, αξιοποιώντας την κλειστή μορφή κάτω από το ουδέτερο ως προς κίνδυνο μέτρο και το ζωντανό επιτόκιο μηδενικού κινδύνου που εξάγεται από το \texttt{\^{}IRX} (13-week T-bill). Η συγκεκριμένη μέθοδος αποτελεί τη ντε φάκτο σύμβαση της αγοράς όταν τα calls διαπραγματεύονται με όρους εξυπολογιζόμενης μεταβλητότητας, οπότε η σύμπτωση δεν είναι τυχαία. \emph{Δεύτερον}, για τα δικαιώματα πώλησης (puts) υπερτερεί η εμπειρική μέθοδος \texttt{window}, με MAPE ίσο με $50{,}0\%$· η μέθοδος αυτή δειγματοληπτεί συνεχόμενα παράθυρα $T$ ημερών από τη ιστορική σειρά και έτσι διατηρεί τόσο την ασυμμετρία όσο και τις παχιές αριστερές ουρές των πραγματικών αποδόσεων, χαρακτηριστικά που η γκαουσιανή υπόθεση του Black–Scholes συστηματικά υπεκτιμά.
+Η Εικόνα~\ref{fig:mc_vs_actual} συνοψίζει τα αποτελέσματα. Δύο είναι οι κύριες παρατηρήσεις. \emph{Πρώτον}, για τα δικαιώματα αγοράς (calls) η μέθοδος \texttt{black\_scholes} επιτυγχάνει το χαμηλότερο σφάλμα, ίσο με $46{,}4\%$, αξιοποιώντας την κλειστή μορφή κάτω από το ουδέτερο ως προς κίνδυνο μέτρο και το ζωντανό επιτόκιο μηδενικού κινδύνου που εξάγεται από το \texttt{\^{}IRX} (13-week T-bill). Η συγκεκριμένη μέθοδος αποτελεί τη ντε φάκτο σύμβαση της αγοράς όταν τα calls διαπραγματεύονται με όρους εξυπολογιζόμενης μεταβλητότητας, οπότε η σύμπτωση δεν είναι τυχαία. \emph{Δεύτερον}, για τα δικαιώματα πώλησης (puts) υπερτερεί η εμπειρική μέθοδος \texttt{window}, με MAPE ίσο με $50{,}0\%$· η μέθοδος αυτή δειγματοληπτεί συνεχόμενα παράθυρα $T$ ημερών από τη ιστορική σειρά και έτσι διατηρεί τόσο την ασυμμετρία όσο και τις παχιές αριστερές ουρές των πραγματικών αποδόσεων, χαρακτηριστικά που η γκαουσιανή υπόθεση του Black–Scholes συστηματικά υποεκτιμά.
 
 Πέραν της απόλυτης κατάταξης, η συγκριτική εικόνα αποκαλύπτει ένα συστηματικό μοτίβο που είναι κοινό σε όλες τις δώδεκα μεθόδους: οι προσομοιωμένες τιμές βρίσκονται σταθερά \emph{υψηλότερα} από τις παρατηρούμενες τιμές αγοράς. Η αιτία είναι μεθοδολογική και όχι αλγοριθμική: η ετήσια ιστορική μεταβλητότητα που χρησιμοποιείται ως είσοδος είναι σταθερά μεγαλύτερη από την εμπεριεχόμενη (implied) μεταβλητότητα την οποία διαπραγματεύεται η αγορά για τους ίδιους τίτλους. Η διαφορά αυτή είναι γνωστή στη βιβλιογραφία ως \emph{volatility risk premium} και αποτυπώνει την τάση των επενδυτών να πληρώνουν λιγότερο για ασφάλιση από όσο θα δικαιολογούσε η μακροχρόνια στατιστική. Συνεπώς, οι απόλυτες τιμές MAPE δεν πρέπει να ερμηνεύονται ως μέτρο αλγοριθμικής ανικανότητας: αποτυπώνουν κυρίως την απόσταση μεταξύ του φυσικού μέτρου $\mathbb{P}$ από το οποίο αντλούνται τα δείγματα και του ουδέτερου ως προς κίνδυνο μέτρου $\mathbb{Q}$ υπό το οποίο εκφράζονται οι τιμές αγοράς. Στις επόμενες ενότητες δείχνεται ότι όταν η σύγκριση περιοριστεί στα At-The-Money δικαιώματα (ενότητα~\ref{fig:mc_vs_actual_atm}) ή ενσωματωθεί η διόρθωση Empirical Martingale (ενότητα~\ref{fig:emc_comparison}), η διαφορά αυτή συστηματικά μειώνεται.
 
@@ -1196,7 +1583,7 @@ $$
 \label{fig:block_length_sweep}
 \end{figure}
 
-\subsection{Ευαισθησία ως προς την παράμετρο $\lambda$ του πολυκλασματικού μοντέλου}
+\subsection{Ευαισθησία ως προς την παράμετρο \texorpdfstring{$\lambda$}{lambda} του πολυκλασματικού μοντέλου}
 
 Στο πολυκλασματικό μοντέλο MMAR, η παράμετρος ενδοδιαλειπτικότητας $\lambda$ (intermittency) ελέγχει τη διακύμανση του λογαριθμοκανονικού πολλαπλασιαστικού καταρράκτη που υποκαθιστά τον γραμμικό χρόνο διαπραγμάτευσης. Η οριακή τιμή $\lambda = 0$ εκφυλίζει τον καταρράκτη σε ενιαία ανύψωση και αναπαράγει ακριβώς τη γεωμετρική κίνηση Brown της κλειστής μορφής Black–Scholes· καθώς το $\lambda$ αυξάνεται, η διακύμανση των πολλαπλασιαστών διογκώνεται, παράγοντας πιο έντονη συστάδωση μεταβλητότητας και βαρύτερες ουρές στις τερματικές τιμές, διατηρώντας ταυτόχρονα αμετάβλητη τη συνολική αναμενόμενη μεταβλητότητα $\sigma^2 T$ χάρη στην αναλογική επανακανονικοποίηση του καταρράκτη ($E[W] = 1$).
 
@@ -1212,6 +1599,7 @@ $$
 \end{figure}
 
 \subsection{Σύγκλιση και υπολογιστικό κόστος}
+\label{sec:convergence}
 
 Η ποιότητα μιας προσομοίωσης Monte Carlo αξιολογείται με δύο μεγέθη που εξελίσσονται με αντίθετες κατευθύνσεις καθώς αυξάνεται ο αριθμός μονοπατιών $N$: το \emph{στατιστικό σφάλμα} συρρικνώνεται με ρυθμό $O(N^{-1/2})$, ενώ το \emph{υπολογιστικό κόστος} αυξάνεται γραμμικά. Για να εντοπιστεί το σημείο όπου η περαιτέρω αύξηση του $N$ παύει να εξαργυρώνεται σε ορατή βελτίωση ακρίβειας, εκτελέστηκε ξεχωριστή σάρωση κλιμάκωσης στο notebook \texttt{scalability\_test} με πλέγμα \texttt{RUN\_SCALES = [1\,000, 10\,000, 100\,000, 500\,000, 1\,000\,000, 2\,000\,000, 5\,000\,000, 10\,000\,000]} και κατώφλι σύγκλισης $1\%$ μεταβολή τιμής μεταξύ διαδοχικών κλιμάκων.
 
@@ -1219,12 +1607,7 @@ $$
 
 Από πλευράς κόστους, ένας μόνος κόμβος \texttt{Standard\_D8ds\_v4} (8 vCPU, 32~GB μνήμης) ολοκληρώνει $10^7$ μονοπάτια σε περίπου εικοσιπέντε δευτερόλεπτα για τις διανυσματοποιημένες μεθόδους. Οι πιο απαιτητικές μέθοδοι σε μνήμη είναι οι \texttt{fhs}/\texttt{fhs\_rn}, που δεσμεύουν περί τα $800$~MB για τον πίνακα ημερησίων αποδόσεων σε $10^7$ μονοπάτια με ορίζοντα $T = 10$ ημερών, και η \texttt{analogue}, που δεσμεύει επιπλέον $\approx 1{,}6$~GB για τους δείκτες των $k$ κοντινότερων γειτόνων σε κάθε βήμα. Και οι τρεις χωρούν στα $32$~GB του κόμβου αλλά αφήνουν περιορισμένα περιθώρια, οπότε σε εμπορική κλίμακα ($> 10^7$ μονοπάτια ανά κλήση) συστήνεται είτε κατάτμηση σε mini-batches είτε οριζόντια επέκταση μέσω Spark partitions. Η γραμμική κλιμάκωση του χρόνου εκτέλεσης με τον αριθμό μονοπατιών παρατηρείται καθαρά στις μετρήσεις του \texttt{scalability\_test} και αποδεικνύει την επιτυχία της διανυσματοποίησης NumPy έναντι μιας αφελούς βρόχου-ανά-διαδρομή υλοποίησης.
 
-\begin{figure}[h]
-\centering
-\textbf{[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ --- διάγραμμα σύγκλισης τιμής και χρόνου εκτέλεσης ως συνάρτηση του αριθμού μονοπατιών $N$, που δεν είναι διαθέσιμο στο repository.]}
-\caption{Σύγκλιση τιμής και υπολογιστικός χρόνος ως συνάρτηση του αριθμού μονοπατιών.}
-\label{fig:convergence}
-\end{figure}
+
 
 \subsection{Σύνοψη αποτελεσμάτων}
 
@@ -1285,9 +1668,9 @@ ATM ($\lvert K/S_0 - 1\rvert \leq 5\%$) --- Puts  & window & 28.5 \\ \hline
 
 \textbf{Δεύτερον, η σύλληψη της εξάρτησης είναι σημαντικότερη από την επιλογή κατανομής}. Η συστηματική υπεροχή της \texttt{window} στα puts — όπου η αριστερή ουρά είναι κρίσιμη — οφείλεται στο γεγονός ότι ανακυκλώνει ολόκληρα πραγματικά επεισόδια αγοράς και έτσι διατηρεί αυτόματα τη συγκέντρωση μεταβλητότητας. Παρόμοια, η σάρωση του Σχήματος~\ref{fig:block_length_sweep} έδειξε ότι μέσα μήκη block γύρω στις 5--8 ημέρες (συμβατά με ένα τυπικό επεισόδιο διακύμανσης) είναι αυτά που μειώνουν περισσότερο το σφάλμα, ενώ τα αμιγώς i.i.d. σχήματα (\texttt{historical}, \texttt{student\_t}) υστερούν σταθερά. Η σύλληψη της μνήμης της σειράς αποδόσεων δεν είναι λοιπόν μια ακαδημαϊκή λεπτομέρεια αλλά ένας πρώτης τάξης οδηγός τιμολογιακής ακρίβειας.
 
-\textbf{Τρίτον, η Empirical Martingale Correction βελτιώνει συστηματικά τις εμπειρικές μεθόδους χωρίς κόστος}. Όπως αποτυπώνεται στο Σχήμα~\ref{fig:emc_comparison}, η post-processing διόρθωση των Duan και Simonato (1998) μειώνει το median bias των P-measure προσομοιωτών εξαλείφοντας τη γραμμική μεροληψία τιμολόγησης, ενώ διατηρεί τα ανώτερα ροπά (κύρτωση, ασυμμετρία, εξάρτηση των ουρών) ανέπαφα. Δεν υπάρχει εμπειρικός λόγος να μην εφαρμόζεται σε κάθε μη ουδέτερη ως προς κίνδυνο εκτίμηση.
+\textbf{Τρίτον, η Empirical Martingale Correction βελτιώνει συστηματικά τις εμπειρικές μεθόδους χωρίς κόστος}. Όπως αποτυπώνεται στο Σχήμα~\ref{fig:emc_comparison}, η post-processing διόρθωση των Duan και Simonato (1998) μειώνει το median bias των P-measure προσομοιωτών εξαλείφοντας τη γραμμική μεροληψία τιμολόγησης, ενώ διατηρεί τις ανώτερες ροπές (κύρτωση, ασυμμετρία, εξάρτηση των ουρών) ανέπαφα. Δεν υπάρχει εμπειρικός λόγος να μην εφαρμόζεται σε κάθε μη ουδέτερη ως προς κίνδυνο εκτίμηση.
 
-\textbf{Τέταρτον, για τις κλίμακες της εργασίας ($N \leq 10^{7}$) η in-driver διανυσματοποίηση κυριαρχεί έναντι της οριζόντιας επέκτασης}. Οι μετρήσεις του Σχήματος~\ref{fig:convergence} δείχνουν σχεδόν γραμμική κλιμάκωση μέχρι τα $10^{7}$ μονοπάτια ($\approx 25\,$s ανά πλήρες run στον κόμβο \texttt{Standard\_D8ds\_v4}) και σύγκλιση τιμολογήσεων μικρότερη του $0.05\%$ μεταξύ $5\cdot 10^{6}$ και $10^{7}$ μονοπατιών. Συνεπώς, η παραγωγική ρύθμιση $N = 2\cdot 10^{6}$ της εργασίας προσφέρει ικανοποιητικό συμβιβασμό ακρίβειας-κόστους, ενώ η εισαγωγή Spark partitions θα προσέθετε κόστος σειριοποίησης μεγαλύτερο από το όφελος.
+\textbf{Τέταρτον, για τις κλίμακες της εργασίας ($N \leq 10^{7}$) η in-driver διανυσματοποίηση κυριαρχεί έναντι της οριζόντιας επέκτασης}. Οι μετρήσεις της ενότητας~\ref{sec:convergence} δείχνουν σχεδόν γραμμική κλιμάκωση μέχρι τα $10^{7}$ μονοπάτια ($\approx 25\,$s ανά πλήρες run στον κόμβο \texttt{Standard\_D8ds\_v4}) και σύγκλιση τιμολογήσεων μικρότερη του $0.05\%$ μεταξύ $5\cdot 10^{6}$ και $10^{7}$ μονοπατιών. Συνεπώς, η παραγωγική ρύθμιση $N = 2\cdot 10^{6}$ της εργασίας προσφέρει ικανοποιητικό συμβιβασμό ακρίβειας-κόστους, ενώ η εισαγωγή Spark partitions θα προσέθετε κόστος σειριοποίησης μεγαλύτερο από το όφελος.
 
 Σε ένα ευρύτερο επίπεδο, τα αποτελέσματα επιβεβαιώνουν εμπειρικά τη θέση του Κεφαλαίου 4: η αδυναμία του BSM δεν είναι μαθηματική αλλά εμπειρική, και η θεραπεία της δεν περνά κατ' ανάγκην μέσα από πολυπλοκότερα παραμετρικά μοντέλα (στοχαστική μεταβλητότητα, άλματα), αλλά συχνά μέσα από απλούστερες \emph{εμπειρικές} τεχνικές που σέβονται τη δομή των ίδιων των δεδομένων.
 
@@ -1321,7 +1704,7 @@ ATM ($\lvert K/S_0 - 1\rvert \leq 5\%$) --- Puts  & window & 28.5 \\ \hline
 \appendix
 \section{Παράρτημα Α: Παράμετροι εκτέλεσης}
 
-Συγκεντρώνονται εδώ όλες οι ποσοτικές παράμετροι των πειραμάτων του Κεφαλαίου~9, ώστε τα αποτελέσματα να είναι πλήρως αναπαραγώγιμα. Όλες οι τιμές προέρχονται απευθείας από τις πραγματικές σταθερές του αποθετηρίου (\texttt{databricks/src/transforms/simulation.py}, \texttt{databricks/src/utils/simulation\_helpers.py}, \texttt{databricks/jobs/mc\_vs\_actual\_test.ipynb}).
+Συγκεντρώνονται εδώ όλες οι ποσοτικές παράμετροι των πειραμάτων του Κεφαλαίου~9, ώστε τα αποτελέσματα να είναι πλήρως αναπαραγώγιμα. Όλες οι τιμές προέρχονται απευθείας από τις πραγματικές σταθερές του αποθετηρίου (\texttt{databricks/\allowbreak src/\allowbreak transforms/\allowbreak simulation.py}, \texttt{databricks/\allowbreak src/\allowbreak utils/\allowbreak simulation\_helpers.py}, \texttt{databricks/\allowbreak jobs/\allowbreak mc\_vs\_actual\_test.ipynb}). Ο πλήρης κώδικας της εφαρμογής και των notebooks είναι δημόσια διαθέσιμος στο GitHub: \url{https://github.com/sl1789/pub-python-repo}.
 
 \begin{table}[h]
 \centering
@@ -1342,12 +1725,12 @@ EMC rescaling & $\kappa = S_{0} e^{rT/252} / \bar{S}_{T}$ & Duan και Simonato
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \caption{Παράμετροι ανά μέθοδο προσομοίωσης (τιμές αποθετηρίου).}
 \label{tab:appA_methods}
-\begin{tabular}{p{3.5cm} p{4.0cm} p{6.0cm}}
+\begin{tabular}{p{4.2cm} p{3.5cm} p{5.8cm}}
 \hline
 Μέθοδος & Παράμετρος & Προεπιλεγμένη τιμή / πλέγμα \\ \hline
 \texttt{historical} & --- & --- \\
@@ -1357,8 +1740,8 @@ EMC rescaling & $\kappa = S_{0} e^{rT/252} / \bar{S}_{T}$ & Duan και Simonato
 \texttt{student\_t} & $\nu$ & MLE προσαρμογή στα log-returns \\
 \texttt{black\_scholes} & $\sigma$ & ετησιοποιημένη ιστορική μεταβλητότητα \\
 \texttt{multifractal} & $\lambda$ (intermittency) & $0.4$ (default), πλέγμα \texttt{LAM\_GRID} \\
-\texttt{multifractal\_empirical} & $\lambda$ & $0.4$ (default), shocks από εμπειρικά κατάλοιπα \\
-\texttt{block\_bootstrap} & \texttt{block\_mean\_len} & $5$ (default), πλέγμα \texttt{BLOCK\_LENGTHS} \\
+\texttt{multifractal\_\allowbreak empirical} & $\lambda$ & $0.4$ (default), shocks από εμπειρικά κατάλοιπα \\
+\texttt{block\_\allowbreak bootstrap} & \texttt{block\_\allowbreak mean\_len} & $5$ (default), πλέγμα \texttt{BLOCK\_LENGTHS} \\
 \texttt{fhs} (P-measure) & GARCH(1,1) $(\omega,\alpha,\beta)$ & MLE προσαρμογή \\
 \texttt{fhs\_rn} (Q-measure + EMC) & GARCH(1,1) $(\omega,\alpha,\beta)$ & MLE προσαρμογή \\
 \texttt{analogue} (k-NN) & \texttt{k\_neighbors}, \texttt{window} & $20$, $5$ ημέρες \\ \hline
@@ -1373,28 +1756,28 @@ EMC rescaling & $\kappa = S_{0} e^{rT/252} / \bar{S}_{T}$ & Duan και Simonato
 \begin{tabular}{p{4.0cm} p{8.5cm}}
 \hline
 Πλέγμα & Τιμές \\ \hline
-\texttt{RUN\_SCALES} (\S\ref{fig:convergence}) & $\{10^{3}, 10^{4}, 10^{5}, 5\cdot 10^{5}, 10^{6}, 2\cdot 10^{6}, 5\cdot 10^{6}, 10^{7}\}$ \\
+\texttt{RUN\_SCALES} (\S\ref{sec:convergence}) & $\{10^{3}, 10^{4}, 10^{5}, 5\cdot 10^{5}, 10^{6}, 2\cdot 10^{6}, 5\cdot 10^{6}, 10^{7}\}$ \\
 \texttt{RUN\_SCALES} (mc\_vs\_actual\_test, trimmed) & $\{5\cdot 10^{5}, 10^{6}, 2\cdot 10^{6}\}$ \\
 \texttt{BLOCK\_LENGTHS} (\S\ref{fig:block_length_sweep}) & $\{1, 2, 3, 5, 8, 13, 21\}$ \\
 \texttt{LAM\_GRID} (\S\ref{fig:lam_sweep}) & $\{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8\}$ \\ \hline
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \caption{Σύνολα μεθόδων στο \texttt{simulation.py}.}
 \label{tab:appA_sets}
-\begin{tabular}{p{4.0cm} p{8.5cm}}
+\begin{tabular}{p{4.8cm} p{7.7cm}}
 \hline
 Σύνολο & Μέθοδοι \\ \hline
-\texttt{SIMULATION\_METHODS} & $\{$\texttt{historical}, \texttt{window}, \texttt{window\_10d}, \texttt{window\_20d}, \texttt{student\_t}, \texttt{black\_scholes}, \texttt{multifractal}, \texttt{multifractal\_empirical}, \texttt{block\_bootstrap}, \texttt{fhs}, \texttt{fhs\_rn}, \texttt{analogue}$\}$ \\
-\texttt{RISK\_NEUTRAL\_METHODS} & $\{$\texttt{black\_scholes}, \texttt{multifractal}, \texttt{multifractal\_empirical}, \texttt{fhs\_rn}$\}$ \\
+\texttt{SIMULATION\_\allowbreak METHODS} & $\{$\texttt{historical}, \texttt{window}, \texttt{window\_10d}, \texttt{window\_20d}, \texttt{student\_t}, \texttt{black\_scholes}, \texttt{multifractal}, \texttt{multifractal\_\allowbreak empirical}, \texttt{block\_\allowbreak bootstrap}, \texttt{fhs}, \texttt{fhs\_rn}, \texttt{analogue}$\}$ \\
+\texttt{RISK\_\allowbreak NEUTRAL\_\allowbreak METHODS} & $\{$\texttt{black\_scholes}, \texttt{multifractal}, \texttt{multifractal\_\allowbreak empirical}, \texttt{fhs\_rn}$\}$ \\
 \texttt{EMC\_METHODS} (default) & $\{$\texttt{fhs\_rn}$\}$ \\ \hline
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \caption{Υπολογιστικό περιβάλλον.}
@@ -1415,29 +1798,29 @@ Python & $3.11$ \\
 \end{tabular}
 \end{table}
 
-\section{Παράρτημα Β: Επιπλέον γραφήματα}
-
-Τα κεντρικά διαγνωστικά γραφήματα της εργασίας ενσωματώνονται στο Κεφάλαιο~9 (Σχήματα~\ref{fig:mc_vs_actual}, \ref{fig:mc_vs_actual_atm}, \ref{fig:emc_comparison}, \ref{fig:block_length_sweep}, \ref{fig:lam_sweep}) και προέρχονται απευθείας από τον φάκελο \texttt{databricks/docs/}. Οι παρακάτω συμπληρωματικές εξαγωγές δεδομένων υπάρχουν στο αποθετήριο και μπορούν να αναπαραχθούν τοπικά από τα αντίστοιχα Databricks notebooks· διατίθενται ως Parquet στο ADLS Gen2 και ως αναλυτικά γραφήματα μέσα στα notebooks.
-
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \caption{Παραγωγικά Databricks notebooks και τα παράγωγα datasets που εκθέτουν.}
-\label{tab:appB_artifacts}
-\begin{tabular}{p{4.5cm} p{4.0cm} p{4.5cm}}
+\label{tab:appA_artifacts}
+\begin{tabular}{p{3.8cm} p{4.2cm} p{5.0cm}}
 \hline
 Notebook & Παράγωγο dataset & Περιεχόμενο \\ \hline
-\texttt{mc\_vs\_actual\_test} & \texttt{mc\_vs\_actual} & MAPE ανά μέθοδο, ticker, strike, side \\
-\texttt{mc\_vs\_actual\_test} & \texttt{mc\_vs\_actual\_atm} & ίδιο, υπό φίλτρο $|K/S_{0}-1| \leq 5\%$ \\
-\texttt{mc\_vs\_actual\_test} & \texttt{emc\_comparison} & MAPE πριν/μετά EMC, για \texttt{historical}, \texttt{window}, \texttt{block\_bootstrap} \\
-\texttt{mc\_vs\_actual\_test} & \texttt{block\_length\_sweep} & MAPE ως συνάρτηση \texttt{block\_mean\_len} \\
-\texttt{mc\_vs\_actual\_test} & \texttt{lam\_sweep} & MAPE ως συνάρτηση $\lambda$ \\
-\texttt{scalability\_test} & \texttt{scalability} & χρόνος εκτέλεσης και σύγκλιση ανά \texttt{RUN\_SCALES} \\
-\texttt{monte\_carlo\_simulation} & \texttt{monte\_carlo} & τερματικές τιμές και τιμολογήσεις \\
-\texttt{yfinance\_pipeline} & \texttt{default.yfinance\_historical\_data} & ιστορικές τιμές μετοχών και δεικτών \\
-\texttt{options\_data\_pipeline} & \texttt{default.actual\_option\_prices} & πραγματικά αποτιμημένα δικαιώματα \\ \hline
+\texttt{mc\_vs\_\allowbreak actual\_test} & \texttt{mc\_vs\_actual} & MAPE ανά μέθοδο, ticker, strike, side \\
+\texttt{mc\_vs\_\allowbreak actual\_test} & \texttt{mc\_vs\_\allowbreak actual\_atm} & ίδιο, υπό φίλτρο $|K/S_{0}-1| \leq 5\%$ \\
+\texttt{mc\_vs\_\allowbreak actual\_test} & \texttt{emc\_\allowbreak comparison} & MAPE πριν/μετά EMC, για \texttt{historical}, \texttt{window}, \texttt{block\_\allowbreak bootstrap} \\
+\texttt{mc\_vs\_\allowbreak actual\_test} & \texttt{block\_\allowbreak length\_sweep} & MAPE ως συνάρτηση \texttt{block\_\allowbreak mean\_len} \\
+\texttt{mc\_vs\_\allowbreak actual\_test} & \texttt{lam\_sweep} & MAPE ως συνάρτηση $\lambda$ \\
+\texttt{scalability\_test} & \texttt{scalability} & χρόνος εκτέλεσης και σύγκλιση ανά \texttt{RUN\_\allowbreak SCALES} \\
+\texttt{monte\_carlo\_\allowbreak simulation} & \texttt{monte\_carlo} & τερματικές τιμές και τιμολογήσεις \\
+\texttt{yfinance\_\allowbreak pipeline} & \texttt{default.\allowbreak yfinance\_\allowbreak historical\_\allowbreak data} & ιστορικές τιμές μετοχών και δεικτών \\
+\texttt{options\_\allowbreak data\_pipeline} & \texttt{default.\allowbreak actual\_\allowbreak option\_prices} & πραγματικά αποτιμημένα δικαιώματα \\ \hline
 \end{tabular}
 \end{table}
+
+\section{Παράρτημα Β: Επιπλέον γραφήματα}
+
+Τα κεντρικά διαγνωστικά γραφήματα της εργασίας ενσωματώνονται στο Κεφάλαιο~9 (Σχήματα~\ref{fig:mc_vs_actual}, \ref{fig:mc_vs_actual_atm}, \ref{fig:emc_comparison}, \ref{fig:block_length_sweep}, \ref{fig:lam_sweep}) και προέρχονται απευθείας από τον φάκελο \texttt{databricks/docs/}. Οι συμπληρωματικές εξαγωγές δεδομένων που τα τροφοδοτούν τεκμηριώνονται στον Πίνακα~\ref{tab:appA_artifacts} του Παραρτήματος~Α· διατίθενται ως Parquet στο ADLS Gen2 και μπορούν να αναπαραχθούν τοπικά από τα αντίστοιχα Databricks notebooks, με αναλυτικά γραφήματα μέσα στα notebooks.
 
 \noindent\textbf{Πρόσθετες διαστάσεις σύγκρισης.} Πέρα από τις συγκεντρωτικές αναλύσεις του Κεφαλαίου~9, τα παραπάνω datasets υποστηρίζουν την παραγωγή των ακόλουθων κατηγοριών συμπληρωματικών γραφημάτων χωρίς αλλαγή κώδικα — αρκεί η εκ νέου εκτέλεση των αντίστοιχων κελιών του \texttt{mc\_vs\_actual\_test.ipynb} με εναλλαγή του pivot:
 
@@ -1452,7 +1835,7 @@ Notebook & Παράγωγο dataset & Περιεχόμενο \\ \hline
 \noindent\textbf{Αναπαραγωγή.} Όλα τα παραπάνω παράγονται από το \texttt{mc\_vs\_actual\_test.ipynb} με τις παραμέτρους που τεκμηριώνονται στο Παράρτημα~Α. Τα γραφήματα της εργασίας έχουν εξαχθεί από το ίδιο notebook ως \texttt{PNG} στον φάκελο \texttt{databricks/docs/} και ενσωματώνονται στο σώμα του κειμένου μέσω του \texttt{\textbackslash graphicspath\{\{../databricks/docs/\}\{./figures/\}\}} του preamble.
 
 \section{Παράρτημα Γ: Πίνακας REST endpoints}
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{lllll}
@@ -1472,7 +1855,7 @@ GET  & /datasets/\{name\}& viewer    & ?ticker=...                     & Rows \\
 \end{table}
 
 \section{Παράρτημα Δ: Μεταβλητές περιβάλλοντος}
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{ll}
@@ -1522,6 +1905,7 @@ DATABRICKS\_JOB\_ID          & Job ID προς εκτέλεση \\ \hline
 % =====================================================================
 % ΒΙΒΛΙΟΓΡΑΦΙΑ
 % =====================================================================
+\addcontentsline{toc}{section}{Βιβλιογραφία}
 \begin{thebibliography}{99}
 
 \bibitem{BaroneAdesi2008}
@@ -1540,7 +1924,7 @@ Black, F. and Scholes, M. (1973).
 Journal of Political Economy, 81(3), 637--654.
 
 \bibitem{Coleman}
-Coleman, R., Ghattamaneni, S., Logan, M. and Labouseur, A.~G.
+Coleman, R., Ghattamaneni, S., Logan, M. and Labouseur, A.~G. (2014).
 \emph{Computational finance with map-reduce in Scala}.
 Proceedings of the 22nd Euromicro International Conference on
 Parallel, Distributed and Network-Based Processing (PDP).
@@ -1562,7 +1946,7 @@ the variance of United Kingdom inflation}.
 Econometrica, 50(4), 987--1007.
 
 \bibitem{Gavrilov}
-Gavrilov, M., Anguelov, D., Indyk, P. and Motwani, R.
+Gavrilov, M., Anguelov, D., Indyk, P. and Motwani, R. (2000).
 \emph{Mining the stock market: which measure is best?}.
 Proceedings of the 6th ACM SIGKDD International Conference on
 Knowledge Discovery and Data Mining (KDD), Stanford University.
@@ -1572,6 +1956,11 @@ Heston, S.~L. (1993).
 \emph{A closed-form solution for options with stochastic volatility
 with applications to bond and currency options}.
 The Review of Financial Studies, 6(2), 327--343.
+
+\bibitem{hull2021}
+Hull, J.~C. (2021).
+\emph{Options, Futures, and Other Derivatives}, 11th edition.
+Pearson Education, New York, NY.
 
 \bibitem{Jiang2004}
 Jiang, T. (2004).
@@ -1584,6 +1973,12 @@ Mandelbrot, B.~B., Fisher, A. and Calvet, L. (1997).
 \emph{A multifractal model of asset returns}.
 Cowles Foundation Discussion Paper No.~1164, Yale University.
 
+\bibitem{Mandelbrot2004}
+Mandelbrot, B.~B. and Hudson, R.~L. (2004).
+\emph{The (Mis)Behavior of Markets: A Fractal View of Risk, Ruin,
+and Reward}.
+Basic Books, New York.
+
 \bibitem{Merton1973}
 Merton, R.~C. (1973).
 \emph{Theory of rational option pricing}.
@@ -1595,7 +1990,7 @@ Merton, R.~C. (1976).
 Journal of Financial Economics, 3(1--2), 125--144.
 
 \bibitem{Moldovan}
-Moldovan, D., Moca, M. and Rusu, R.
+Moldovan, D., Moca, M. and Rusu, R. (2012).
 \emph{Analysis and design insights for an e-finance platform using
 parallel processing}.
 Conference proceedings (ACA-31), Babe\c{s}-Bolyai University,

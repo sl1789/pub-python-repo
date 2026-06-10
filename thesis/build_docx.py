@@ -202,6 +202,19 @@ def preprocess_figures(body: str) -> str:
     return _FIGURE_RE.sub(_sub, body)
 
 
+def preprocess_inline_graphics(body: str) -> str:
+    """Turn bare \\includegraphics{name} (outside figure envs and not commented
+    out) into a captionless [[FIGURE|...]] sentinel so cover-page logos render
+    in the docx the same way figure-env images do."""
+    def _sub(match: re.Match[str]) -> str:
+        raw_name = match.group(1)
+        resolved = _resolve_image(raw_name)
+        path_str = str(resolved) if resolved else ""
+        return f"\n\n[[FIGURE|{path_str}|{raw_name}|]]\n\n"
+
+    return _INCLUDEGRAPHICS_RE.sub(_sub, body)
+
+
 _FIGURE_SENTINEL_RE = re.compile(
     r"\[\[FIGURE\|([^|\]]*)\|([^|\]]*)\|([^\]]*)\]\]"
 )
@@ -219,17 +232,19 @@ CITE_LABELS: dict[str, str] = {
     "BaroneAdesi2008": "Barone-Adesi, Engle και Mancini, 2008",
     "Bates2000": "Bates, 2000",
     "BlackScholes1973": "Black και Scholes, 1973",
-    "Coleman": "Coleman κ.ά.",
+    "Coleman": "Coleman κ.ά., 2014",
     "Damji2020": "Damji κ.ά., 2020",
     "DuanSimonato1998": "Duan και Simonato, 1998",
     "Engle1982": "Engle, 1982",
-    "Gavrilov": "Gavrilov κ.ά.",
+    "Gavrilov": "Gavrilov κ.ά., 2000",
     "Heston1993": "Heston, 1993",
+    "hull2021": "Hull, 2021",
     "Jiang2004": "Jiang, 2004",
     "MandelbrotFC1997": "Mandelbrot, Fisher και Calvet, 1997",
+    "Mandelbrot2004": "Mandelbrot και Hudson, 2004",
     "Merton1973": "Merton, 1973",
     "Merton1976": "Merton, 1976",
-    "Moldovan": "Moldovan κ.ά.",
+    "Moldovan": "Moldovan κ.ά., 2012",
     "Mulvey1992": "Mulvey και Vladimirou, 1992",
     "Nandi1998": "Nandi, 1998",
     "PaparoditisPolitis2002": "Paparoditis και Politis, 2002",
@@ -304,10 +319,15 @@ def _add_figure(doc: Document, abs_path: str, raw_name: str, caption: str) -> No
     else:
         placeholder = doc.add_paragraph()
         placeholder.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        msg = (
-            f"[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — δεν εντοπίστηκε αρχείο "
-            f"({raw_name or 'χωρίς διαδρομή'})]"
-        )
+        if not raw_name:
+            # No \includegraphics at all: assume the figure body is TikZ /
+            # pgfplots, which doesn't survive the docx conversion.
+            msg = "[Σχήμα TikZ/pgfplots — διαθέσιμο μόνο στην έκδοση PDF]"
+        else:
+            msg = (
+                f"[ΕΙΚΟΝΑ ΠΡΟΣ ΠΡΟΣΘΗΚΗ — δεν εντοπίστηκε αρχείο "
+                f"({raw_name})]"
+            )
         run = placeholder.add_run(msg)
         run.bold = True
     if caption_clean:
@@ -335,6 +355,10 @@ def main() -> None:
     # Convert figure environments into [[FIGURE|...]] sentinels before any
     # other processing so the picture is rendered exactly once, in place.
     body = preprocess_figures(body)
+
+    # Any bare \includegraphics left (cover-page logos etc.) becomes a
+    # captionless sentinel too, so those images survive the inline cleanup.
+    body = preprocess_inline_graphics(body)
 
     # Expand the thebibliography environment into a plain section + paragraphs.
     body = preprocess_bibliography(body)
